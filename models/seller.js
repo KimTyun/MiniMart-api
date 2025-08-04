@@ -53,5 +53,14 @@ module.exports = class Seller extends Sequelize.Model {
          foreignKey: 'seller_id',
          targetKey: 'id',
       })
+
+      Seller.hasMany(db.Follow, {
+         sourceKey: 'id',
+         foreignKey: 'seller_id',
+      })
+      Seller.hasMany(db.Chat, {
+         sourceKey: 'id',
+         foreignKey: 'seller_id',
+      })
    }
 }

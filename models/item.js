@@ -37,7 +37,7 @@ module.exports = class Item extends Sequelize.Model {
             timestamps: true,
             underscored: false,
             modelName: 'Item',
-            tableName: 'Items',
+            tableName: 'items',
             paranoid: true,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',
@@ -46,9 +46,27 @@ module.exports = class Item extends Sequelize.Model {
    }
 
    static associate(db) {
-      Item.belongsTo(db.seller, {
+      Item.belongsTo(db.Seller, {
          foreignKey: 'seller_id',
          targetKey: 'id',
+      })
+      Item.hasMany(db.ItemImg, {
+         foreignKey: 'item_id',
+         sourceKey: 'id',
+      })
+      Item.hasMany(db.ItemOption, {
+         foreignKey: 'item_id',
+         sourceKey: 'id',
+      })
+      Item.hasMany(db.OrderItem, {
+         foreignKey: 'item_id',
+         sourceKey: 'id',
+      })
+      Item.belongsToMany(db.Order, {
+         through: 'order_item',
+         foreignKey: 'item_id',
+         otherKey: 'order_id',
+         onDelete: 'CASCADE',
       })
    }
 }

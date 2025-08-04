@@ -1,0 +1,35 @@
+const { Sequelize, DataTypes } = require('sequelize')
+
+module.exports = class ItemImg extends Sequelize.Model {
+   static init(sequelize) {
+      return super.init(
+         {
+            img_url: {
+               type: DataTypes.INTEGER,
+               allowNull: false,
+            },
+            rep_img_yn: {
+               type: DataTypes.BOOLEAN,
+               allowNull: false,
+            },
+         },
+         {
+            sequelize,
+            timestamps: false,
+            underscored: false,
+            modelName: 'ItemImg',
+            tableName: 'item_img',
+            paranoid: true,
+            charset: 'utf8mb4',
+            collate: 'utf8mb4_general_ci',
+         }
+      )
+   }
+
+   static associate(db) {
+      ItemImg.belongsTo(db.Item, {
+         foreignKey: 'item_id',
+         targetKey: 'id',
+      })
+   }
+}

@@ -48,13 +48,25 @@ module.exports = class User extends Sequelize.Model {
 
    static associate(db) {
       User.hasOne(db.Seller, {
-         foreignKey: 'user_id',
+         foreignKey: 'id',
          sourceKey: 'id',
       })
 
       User.hasMany(db.Cart, {
          foreignKey: 'user_id',
          sourceKey: 'id',
+      })
+      User.hasMany(db.Follow, {
+         sourceKey: 'id',
+         foreignKey: 'buyer_id',
+      })
+      User.hasMany(db.Order, {
+         sourceKey: 'id',
+         foreignKey: 'buyer_id',
+      })
+      User.hasMany(db.Chat, {
+         sourceKey: 'id',
+         foreignKey: 'buyer_id',
       })
    }
 }
