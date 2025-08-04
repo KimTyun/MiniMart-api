@@ -31,6 +31,7 @@ module.exports = class User extends Sequelize.Model {
             },
             role: {
                type: DataTypes.ENUM('BUYER', 'SELLER', 'ADMIN'),
+               defaultValue: 'BUYER',
             },
          },
          {
