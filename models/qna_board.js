@@ -23,6 +23,7 @@ module.exports = class QnaBoard extends Sequelize.Model {
             is_public: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: true,
             },
             admin_id: {
                type: DataTypes.INTEGER,

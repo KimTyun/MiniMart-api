@@ -22,10 +22,12 @@ module.exports = class Item extends Sequelize.Model {
             },
             status: {
                type: DataTypes.ENUM('FOR_SALE', 'SOLD_OUT', 'DISCONTINUED'),
+               defaultValue: 'FOR_SALE',
             },
             is_sale: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: false,
             },
             sale_per: {
                type: DataTypes.FLOAT,

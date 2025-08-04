@@ -7,6 +7,7 @@ module.exports = class Chat extends Sequelize.Model {
             is_blocked: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: false,
             },
          },
          {
