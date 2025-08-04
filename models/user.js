@@ -68,5 +68,15 @@ module.exports = class User extends Sequelize.Model {
          sourceKey: 'id',
          foreignKey: 'buyer_id',
       })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'user_id',
+         as: 'Questions',
+      })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'admin_id',
+         as: 'Answers',
+      })
    }
 }

@@ -12,13 +12,15 @@ const app = express()
 app.set('PORT', process.env.PORT || 8000)
 
 sequelize
-   .sync({ force: true })
+   .getQueryInterface()
+   .dropAllTables({ cascade: true })
    .then(() => {
-      console.log('db연결성공')
+      return sequelize.sync({ force: true })
    })
-   .catch((e) => {
-      console.error(e)
+   .then(() => {
+      console.log('DB 강제 초기화 완료 (외래키 무시)')
    })
+   .catch(console.error)
 
 app.use(
    cors({
