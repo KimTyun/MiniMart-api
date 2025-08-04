@@ -68,5 +68,11 @@ module.exports = class Item extends Sequelize.Model {
          otherKey: 'order_id',
          onDelete: 'CASCADE',
       })
+      Item.belongsToMany(db.Hashtag, {
+         through: 'seller_hashtag',
+         foreignKey: 'item_id',
+         otherKey: 'hashtag_id',
+         onDelete: 'CASCADE',
+      })
    }
 }
