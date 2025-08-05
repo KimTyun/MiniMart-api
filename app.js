@@ -7,18 +7,30 @@ const { sequelize } = require('./models')
 require('dotenv').config()
 const passportConfig = require('./passport')
 const cors = require('cors')
+
+
+
+
 const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 
 // 라우터 등록
-const authRouter = require('./routes/auth')
+
+
+const authRouter = require('./routes/auth/auth')
+const authRouter2 = require('./routes/auth')
+
 
 const app = express()
 passportConfig()
 
-app.set('port', process.env.PORT || 8000)
+
+console.log('PORT ENV:', process.env.PORT)
+console.log('SECRET_KEY:', process.env.SECRET_KEY)
+
+app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
 // sequelize
@@ -56,7 +68,7 @@ app.use(
    passport.session()
 )
 
-// 스웨거
+
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // 라우터 연결
