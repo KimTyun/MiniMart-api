@@ -7,6 +7,7 @@ module.exports = class Chat extends Sequelize.Model {
             is_blocked: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: false,
             },
          },
          {
@@ -31,9 +32,9 @@ module.exports = class Chat extends Sequelize.Model {
          foreignKey: 'seller_id',
          sourceKey: 'id',
       })
-      //   Chat.hasMany(db.ChatMessage, {
-      //      foreignKey: 'chat_id',
-      //      targetKey: 'id',
-      //   })
+      Chat.hasMany(db.ChatMessage, {
+         foreignKey: 'chat_id',
+         targetKey: 'id',
+      })
    }
 }

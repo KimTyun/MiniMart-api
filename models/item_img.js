@@ -11,6 +11,7 @@ module.exports = class ItemImg extends Sequelize.Model {
             rep_img_yn: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: false,
             },
          },
          {
