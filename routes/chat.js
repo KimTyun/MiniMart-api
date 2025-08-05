@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const chatCtrl = require('../ctrl/chatCtrl')
 
 // ✅ DM 목록 조회

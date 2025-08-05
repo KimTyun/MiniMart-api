@@ -14,7 +14,7 @@ const initPassport = require('./passport/googleStrategy')
 
 // 라우터 등록
 
-const authRouter = require('./routes/auth/auth')
+const authRouter = require('./routes/auth/local')
 
 const app = express()
 passportConfig()

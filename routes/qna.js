@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const qnaCtrl = require('../ctrl/qnaCtrl')
 
 // 1:1 문의 등록

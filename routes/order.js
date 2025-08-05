@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const orderCtrl = require('../ctrl/orderCtrl')
 
 //order.js에선 상품의 즉시 구매와 비회원 주문 조회를 담당합니다.

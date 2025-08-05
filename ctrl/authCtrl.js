@@ -5,7 +5,7 @@ const { User } = require('../models')
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
 
-// routes에 있는 auth.js의 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
+// routes에 있는 auth폴더의 각각 .js 파일들 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
 
 exports.register = async (req, res) => {
    try {
@@ -34,6 +34,7 @@ exports.register = async (req, res) => {
       res.status(500).json({ message: '서버 에러' })
    }
 }
+
 exports.login = async (req, res) => {
    try {
       const { email, password } = req.body
@@ -59,6 +60,7 @@ exports.login = async (req, res) => {
       res.status(500).json({ message: '서버 에러' })
    }
 }
+
 exports.logout = async (req, res) => {
    try {
       // 로그아웃은 프론트에서 토큰 삭제로 처리하므로, 백엔드는 그냥 메시지만 전달
@@ -68,6 +70,7 @@ exports.logout = async (req, res) => {
       res.status(500).json({ message: '서버 에러' })
    }
 }
+
 exports.getMe = async (req, res) => {
    try {
       const user = await User.findByPk(req.user.id, {
