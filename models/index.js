@@ -18,6 +18,10 @@ const ItemImg = require('./item_img.js')
 const OrderItem = require('./orderitem.js')
 const Order = require('./order.js')
 const Chat = require('./chat.js')
+const ChatMessage = require('./chat_message.js')
+const Hashtag = require('./hashtag.js')
+const QnaBoard = require('./qna_board.js')
+const QnaBoardImg = require('./qna_board_img.js')
 
 db.sequelize = sequelize
 db.Cart = Cart
@@ -32,6 +36,10 @@ db.ItemImg = ItemImg
 db.Order = Order
 db.OrderItem = OrderItem
 db.Chat = Chat
+db.ChatMessage = ChatMessage
+db.Hashtag = Hashtag
+db.QnaBoard = QnaBoard
+db.QnaBoardImg = QnaBoardImg
 
 Cart.init(sequelize)
 Item.init(sequelize)
@@ -45,6 +53,10 @@ ItemOption.init(sequelize)
 Order.init(sequelize)
 OrderItem.init(sequelize)
 Chat.init(sequelize)
+ChatMessage.init(sequelize)
+Hashtag.init(sequelize)
+QnaBoard.init(sequelize)
+QnaBoardImg.init(sequelize)
 
 Cart.associate(db)
 Item.associate(db)
@@ -58,5 +70,9 @@ ItemOption.associate(db)
 Order.associate(db)
 OrderItem.associate(db)
 Chat.associate(db)
+ChatMessage.associate(db)
+Hashtag.associate(db)
+QnaBoard.associate(db)
+QnaBoardImg.associate(db)
 
 module.exports = db

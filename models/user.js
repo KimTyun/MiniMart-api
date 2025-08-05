@@ -4,9 +4,13 @@ module.exports = class User extends Sequelize.Model {
    static init(sequelize) {
       return super.init(
          {
+            name: {
+               type: DataTypes.STRING(100),
+               allowNull: true,
+            },
             email: {
                type: DataTypes.STRING(100),
-               allowNull: false,
+               allowNull: true,
                unique: true,
             },
             password: {
@@ -21,6 +25,10 @@ module.exports = class User extends Sequelize.Model {
                type: DataTypes.STRING(13),
                allowNull: true,
             },
+            provider_id: {
+               type: DataTypes.STRING(100),
+               allowNull: true,
+            },
             profile_img: {
                type: DataTypes.STRING(255),
                allowNull: true,
@@ -31,6 +39,7 @@ module.exports = class User extends Sequelize.Model {
             },
             role: {
                type: DataTypes.ENUM('BUYER', 'SELLER', 'ADMIN'),
+               defaultValue: 'BUYER',
             },
          },
          {
@@ -67,6 +76,16 @@ module.exports = class User extends Sequelize.Model {
       User.hasMany(db.Chat, {
          sourceKey: 'id',
          foreignKey: 'buyer_id',
+      })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'user_id',
+         as: 'Questions',
+      })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'admin_id',
+         as: 'Answers',
       })
    }
 }
