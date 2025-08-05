@@ -16,6 +16,9 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 
+// 라우터 등록
+
+
 const authRouter = require('./routes/auth/auth')
 const authRouter2 = require('./routes/auth')
 
@@ -66,12 +69,16 @@ app.use(
 )
 
 
-app.use(express.json())
-
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
+// 라우터 연결
 app.use('/auth', authRouter)
 
+// 서버 실행
+app.listen(app.get('port'), () => {
+   console.log(app.get('port'), '번 포트에서 대기중')
+   app.use('/auth', authRouter)
+})
 app.listen(app.get('PORT'), () => {
    console.log(`http://localhost:${app.get('PORT')} express 실행`)
 })

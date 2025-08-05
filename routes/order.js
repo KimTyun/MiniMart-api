@@ -10,6 +10,66 @@ const orderCtrl = require('../ctrl/orderCtrl')
  * @swagger
  * /orders:
  *   post:
+ *     summary: 주문 생성
+ *     tags: [Order]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               cartItemIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: "주문할 장바구니 아이템들의 ID 목록"
+ *               shippingAddress:
+ *                 type: string
+ *                 description: "배송지 주소"
+ *               recipientName:
+ *                 type: string
+ *                 description: "받는 사람 이름"
+ *               paymentMethod:
+ *                 type: string
+ *                 description: "결제 수단 (예: CREDIT_CARD)"
+ *     responses:
+ *       201:
+ *         description: 주문 생성 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 orderId:
+ *                   type: integer
+ *                 message:
+ *                   type: string
+ *                   example: "주문이 성공적으로 완료되었습니다."
+ *       400:
+ *         description: 주문 실패 (잘못된 요청)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "주문 실패: 재고가 부족합니다."
+ *       401:
+ *         description: 로그인이 필요합니다
+ *       500:
+ *         description: 서버 에러
+ */
+router.post('/', isLoggedIn, orderCtrl.createOrder)
+
+// ✅ 상품 단건 구매 (상세페이지에서 바로 주문)
+/**
+ * @swagger
+ * /orders:
+ *   post:
  *     summary: 주문 생성 (바로 구매)
  *     tags: [Order]
  *     security:
@@ -33,7 +93,7 @@ const orderCtrl = require('../ctrl/orderCtrl')
  *       401:
  *         description: 로그인이 필요합니다
  */
-router.post('/', isLoggedIn, orderCtrl.createOrder)
+router.post('/', isLoggedIn, orderCtrl.createOrderImid)
 
 // ✅ 비회원 주문 조회
 /**
