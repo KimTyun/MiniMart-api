@@ -6,8 +6,12 @@ const path = require('path')
 const { sequelize } = require('./models')
 require('dotenv').config()
 const cors = require('cors')
+const authRouter = require('./routes/auth')
 
 const app = express()
+
+console.log('PORT ENV:', process.env.PORT)
+console.log('SECRET_KEY:', process.env.SECRET_KEY)
 
 app.set('PORT', process.env.PORT || 8000)
 
@@ -42,6 +46,10 @@ app.use(
    })
 )
 
-app.listen(app.get('port'), () => {
-   console.log(app.get('port'), '번 포트에서 대기중')
+app.use(express.json())
+
+app.use('/auth', authRouter)
+
+app.listen(app.get('PORT'), () => {
+   console.log(app.get('PORT'), '번 포트에서 대기중')
 })
