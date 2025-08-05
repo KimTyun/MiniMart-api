@@ -404,6 +404,6 @@ router.post('/find/phone/send-code', authCtrl.sendPhoneCode)
  *         description: 서버 에러
  */
 router.post('/find/phone/verify-and-reset', authCtrl.verifyPhoneCodeAndReset)
->>>>>>> c58c601e3835c6680384bb678d349ac7f0eec925
+c58c601e3835c6680384bb678d349ac7f0eec925
 
 module.exports = router
