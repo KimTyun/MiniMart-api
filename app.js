@@ -13,12 +13,14 @@ const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 
 // 라우터 등록
-const authRouter = require('./routes/auth')
+
+const authRouter = require('./routes/auth/auth')
 
 const app = express()
 passportConfig()
+initPassport()
 
-app.set('port', process.env.PORT || 8000)
+app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
 // sequelize
@@ -56,13 +58,14 @@ app.use(
    passport.session()
 )
 
-// 스웨거
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // 라우터 연결
 app.use('/auth', authRouter)
 
 // 서버 실행
+app.listen(app.get('PORT'), () => {
+   console.log(`http://localhost:${app.get('PORT')} express 실행`)
 app.listen(app.get('port'), () => {
    console.log(app.get('port'), '번 포트에서 대기중')
    app.use('/auth', authRouter)
