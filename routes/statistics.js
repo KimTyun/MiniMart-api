@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const statisticsCtrl = require('../ctrl/statisticsCtrl')
 
 // statistics.js는 관리자, 판매자 페이지에서 쓰일 통계 기능을 담당합니다.

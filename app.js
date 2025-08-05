@@ -67,6 +67,6 @@ app.listen(app.get('port'), () => {
    console.log(app.get('port'), '번 포트에서 대기중')
    app.use('/auth', authRouter)
 })
-app.listen(app.get('PORT'), () => {
-   console.log(`http://localhost:${app.get('PORT')} express 실행`)
+app.listen(app.get('port'), () => {
+   console.log(`http://localhost:${app.get('port')} express 실행`)
 })

@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const followCtrl = require('../ctrl/followCtrl')
 
 // ✅ 특정 판매자 팔로우
