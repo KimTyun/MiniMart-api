@@ -108,7 +108,7 @@ router.post('/login', authCtrl.login)
  *       500:
  *         description: 서버 에러
  */
-router.post('/logout', authCtrl.logout) // 실제 구현은 선택 사항
+router.post('/logout', authCtrl.logout)
 
 // 자동 로그인 (JWT로 로그인 상태 확인)
 /**
