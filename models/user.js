@@ -31,6 +31,7 @@ module.exports = class User extends Sequelize.Model {
             },
             role: {
                type: DataTypes.ENUM('BUYER', 'SELLER', 'ADMIN'),
+               defaultValue: 'BUYER',
             },
          },
          {
@@ -67,6 +68,16 @@ module.exports = class User extends Sequelize.Model {
       User.hasMany(db.Chat, {
          sourceKey: 'id',
          foreignKey: 'buyer_id',
+      })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'user_id',
+         as: 'Questions',
+      })
+      User.hasMany(db.QnaBoard, {
+         sourceKey: 'id',
+         foreignKey: 'admin_id',
+         as: 'Answers',
       })
    }
 }

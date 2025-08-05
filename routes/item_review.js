@@ -5,6 +5,50 @@ const reviewCtrl = require('../ctrl/reviewCtrl')
 
 // item_review.js에선 상품의 리뷰 목록 조회, 등록, 수정과 삭제를 담당합니다.
 
+// ✅ 상품 상세 페이지 - 리뷰
+/**
+ * @swagger
+ * /reviews/product/{productId}:
+ *   get:
+ *     summary: 상품 리뷰 목록 조회
+ *     tags: [Review]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: "가져올 리뷰 개수 (예: 3)"
+ *     responses:
+ *       200:
+ *         description: 리뷰 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   rating:
+ *                     type: number
+ *                   reviewTitle:
+ *                     type: string
+ *                   authorProfileUrl:
+ *                     type: string
+ *                   createdAt:
+ *                     type: string
+ *                     format: date
+ *                   content:
+ *                     type: string
+ *       404:
+ *         description: 상품을 찾을 수 없습니다
+ */
+router.get('/product/:productId' /* reviewCtrl.getReviewsByProduct */)
+
 // ✅ 특정 상품의 리뷰 목록 조회
 /**
  * @swagger

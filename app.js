@@ -9,6 +9,9 @@ const cors = require('cors')
 const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./swagger')
 
+// 라우터 등록
+const authRouter = require('./routes/auth')
+
 const app = express()
 
 app.set('port', process.env.PORT || 8000)
@@ -44,8 +47,13 @@ app.use(
    })
 )
 
+// 스웨거
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
+// 라우터 연결
+app.use('/auth', authRouter)
+
+// 서버 실행
 app.listen(app.get('port'), () => {
    console.log(app.get('port'), '번 포트에서 대기중')
 })
