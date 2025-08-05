@@ -14,7 +14,7 @@ const initPassport = require('./passport/googleStrategy')
 
 // 라우터 등록
 
-const authRouter = require('./routes/auth/auth')
+const authRouter = require('./routes/auth/local')
 
 const app = express()
 passportConfig()
@@ -66,10 +66,4 @@ app.use('/auth', authRouter)
 // 서버 실행
 app.listen(app.get('PORT'), () => {
    console.log(`http://localhost:${app.get('PORT')} express 실행`)
-app.listen(app.get('port'), () => {
-   console.log(app.get('port'), '번 포트에서 대기중')
-   app.use('/auth', authRouter)
-})
-app.listen(app.get('port'), () => {
-   console.log(`http://localhost:${app.get('port')} express 실행`)
 })
