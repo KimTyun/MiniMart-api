@@ -1,4 +1,5 @@
 const passport = require('passport')
+<<<<<<< HEAD
 const local = require('./localStrategy')
 const User = require('../models/user')
 
@@ -21,4 +22,22 @@ module.exports = () => {
    })
 
    local() //localStrategy.js 파일의 함수를 실행해 Passport에 local을 추가
+=======
+const google = require('./googleStrategy')
+const User = require('../models/user')
+module.exports = () => {
+   passport.serializeUser((user, done) => {
+      done(null, user.id)
+   })
+   passport.deserializeUser(async (id, done) => {
+      try {
+         const user = await User.findbyId(id)
+         done(null, user) // req.user로 들어감
+      } catch (error) {
+         done(error)
+      }
+   })
+
+   google()
+>>>>>>> 3060e4035543dab7489bad7ec474cf6b9704d6f4
 }
