@@ -4,9 +4,13 @@ module.exports = class User extends Sequelize.Model {
    static init(sequelize) {
       return super.init(
          {
+            name: {
+               type: DataTypes.STRING(100),
+               allowNull: true,
+            },
             email: {
                type: DataTypes.STRING(100),
-               allowNull: false,
+               allowNull: true,
                unique: true,
             },
             password: {
@@ -19,6 +23,10 @@ module.exports = class User extends Sequelize.Model {
             },
             phone_number: {
                type: DataTypes.STRING(13),
+               allowNull: true,
+            },
+            provider_id: {
+               type: DataTypes.STRING(100),
                allowNull: true,
             },
             profile_img: {
