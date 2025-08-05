@@ -5,22 +5,29 @@ const morgan = require('morgan')
 const path = require('path')
 const { sequelize } = require('./models')
 require('dotenv').config()
+const passportConfig = require('./passport')
 const cors = require('cors')
+const passport = require('passport')
+const initPassport = require('./passport/googleStrategy')
+
+const authRouter = require('./routes/auth/auth')
 
 const app = express()
+passportConfig()
 
 app.set('PORT', process.env.PORT || 8000)
 
-sequelize
-   .getQueryInterface()
-   .dropAllTables({ cascade: true })
-   .then(() => {
-      return sequelize.sync({ force: true })
-   })
-   .then(() => {
-      console.log('DB 강제 초기화 완료 (외래키 무시)')
-   })
-   .catch(console.error)
+// 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
+// sequelize
+//    .getQueryInterface()
+//    .dropAllTables({ cascade: true })
+//    .then(() => {
+//       return sequelize.sync({ force: true })
+//    })
+//    .then(() => {
+//       console.log('DB 강제 초기화 완료 (외래키 무시)')
+//    })
+//    .catch(console.error)
 
 app.use(
    cors({
@@ -31,19 +38,31 @@ app.use(
    express.static(path.join(__dirname, 'uploads')),
    express.json(),
    express.urlencoded({ extended: false }),
-   cookieParser(/*process.env.SECRET_KEY*/),
+   cookieParser(process.env.COOKIE_SECRET),
    session({
       resave: false,
       saveUninitialized: true,
-      secret: process.env.SECRET_KEY,
+      secret: process.env.COOKIE_SECRET,
       cookie: {
          httpOnly: true,
-         signed: false,
-         secure: false,
+         signed: true,
+         secure: true,
       },
-   })
+   }),
+   passport.initialize(),
+   passport.session()
 )
 
-app.listen(app.get('port'), () => {
-   console.log(app.get('port'), '번 포트에서 대기중')
+app.use('/auth', authRouter)
+
+app.get('/', (req, res) => {
+   res.send(`<a href="/auth/google/login">Google 로그인</a>`)
+})
+
+app.get('/asdf', (req, res) => {
+   res.send(`유저이름 : ${req.user.name} `)
+})
+
+app.listen(app.get('PORT'), () => {
+   console.log(`http://localhost:${app.get('PORT')} express 실행`)
 })
