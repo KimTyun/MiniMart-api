@@ -7,15 +7,18 @@ const { sequelize } = require('./models')
 require('dotenv').config()
 const passportConfig = require('./passport')
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 
 const authRouter = require('./routes/auth/auth')
 
+
 const app = express()
 passportConfig()
 
-app.set('PORT', process.env.PORT || 8000)
+app.set('port', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
 // sequelize
@@ -53,16 +56,11 @@ app.use(
    passport.session()
 )
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
 app.use('/auth', authRouter)
-
-app.get('/', (req, res) => {
-   res.send(`<a href="/auth/google/login">Google 로그인</a>`)
-})
-
-app.get('/asdf', (req, res) => {
-   res.send(`유저이름 : ${req.user.name} `)
-})
 
 app.listen(app.get('PORT'), () => {
    console.log(`http://localhost:${app.get('PORT')} express 실행`)
+
 })
