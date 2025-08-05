@@ -3,6 +3,8 @@ const router = express.Router()
 const { isLoggedIn } = require('../middlewares')
 const cartCtrl = require('../ctrl/cartCtrl')
 
+//cart.js에선 장바구니 기능을 담당합니다.
+
 // ✅ 장바구니 조회
 /**
  * @swagger

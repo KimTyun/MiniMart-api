@@ -4,6 +4,8 @@ const { isLoggedIn } = require('../middlewares')
 const mainCtrl = require('../ctrl/mainCtrl')
 const itemCtrl = require('../ctrl/itemCtrl')
 
+//item.js에선 상품의 전체 조회, 단일 조회, 메인화면 요구사항에 있던 판매자 리스트 및 물품들의 리스트, 카테고리 등, 또한 상품의 등록, 수정, 삭제를 담당합니다.
+
 // ✅ 상품 전체 조회 (필터/검색 조건은 쿼리로)
 /**
  * @swagger
@@ -81,7 +83,7 @@ router.get('/:itemId', itemCtrl.getItemById)
  *         name: limit
  *         schema:
  *           type: integer
- *         description: 조회할 판매자 수 (예: 10)
+ *         description: "조회할 판매자 수 (예: 10)"
  *     responses:
  *       200:
  *         description: 인기 판매자 목록 조회 성공
@@ -130,7 +132,7 @@ router.get('/top-sellers', mainCtrl.getTopSellers)
  *         name: limit
  *         schema:
  *           type: integer
- *         description: 조회할 최신 상품 수 (예: 20)
+ *         description: "조회할 최신 상품 수 (예: 20)"
  *     responses:
  *       200:
  *         description: 최신 상품 목록 조회 성공
@@ -168,7 +170,7 @@ router.get('/latest-products', mainCtrl.getLatestProducts)
  *         name: limit
  *         schema:
  *           type: integer
- *         description: 조회할 인기 상품 수 (예: 20)
+ *         description: "조회할 인기 상품 수 (예: 20)"
  *       - in: query
  *         name: period
  *         schema:

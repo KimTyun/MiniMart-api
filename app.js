@@ -6,10 +6,12 @@ const path = require('path')
 const { sequelize } = require('./models')
 require('dotenv').config()
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./swagger')
 
 const app = express()
 
-app.set('PORT', process.env.PORT || 8000)
+app.set('port', process.env.PORT || 8000)
 
 sequelize
    .sync({ force: true })
@@ -41,6 +43,8 @@ app.use(
       },
    })
 )
+
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 app.listen(app.get('port'), () => {
    console.log(app.get('port'), '번 포트에서 대기중')

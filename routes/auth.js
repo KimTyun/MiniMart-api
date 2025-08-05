@@ -2,7 +2,7 @@ const express = require('express')
 const router = express.Router()
 const authCtrl = require('../ctrl/authCtrl')
 
-// auth.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능을 다루고 있음
+// auth.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능을 담당합니다.
 
 // 회원가입
 /**

@@ -3,6 +3,8 @@ const router = express.Router()
 const { isLoggedIn } = require('../middlewares')
 const reviewCtrl = require('../ctrl/reviewCtrl')
 
+// item_review.js에선 상품의 리뷰 목록 조회, 등록, 수정과 삭제를 담당합니다.
+
 // ✅ 특정 상품의 리뷰 목록 조회
 /**
  * @swagger
@@ -86,53 +88,6 @@ router.get('/products/:productId/reviews', reviewCtrl.getReviewsByProduct)
  *         description: 서버 에러
  */
 router.post('/products/:productId/reviews', isLoggedIn, reviewCtrl.createReviewForProduct)
-
-// ✅ 리뷰 등록(판매자)
-/**
- * @swagger
- * /orders/{orderId}/seller-review:
- *   post:
- *     summary: 판매자 리뷰 작성
- *     tags: [Review]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: orderId
- *         required: true
- *         schema:
- *           type: integer
- *         description: "리뷰를 작성할 대상 주문의 ID"
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               rating:
- *                 type: number
- *                 minimum: 1
- *                 maximum: 5
- *                 description: "판매자에 대한 별점 (1 ~ 5)"
- *               content:
- *                 type: string
- *                 description: "판매자 리뷰 본문 내용"
- *     responses:
- *       201:
- *         description: 판매자 리뷰 작성 성공
- *       401:
- *         description: 로그인이 필요합니다
- *       403:
- *         description: 이 주문에 대해 리뷰를 작성할 권한이 없습니다
- *       404:
- *         description: 해당 주문을 찾을 수 없습니다
- *       409:
- *         description: 이미 이 주문에 대한 판매자 리뷰를 작성했습니다
- *       500:
- *         description: 서버 에러
- */
-router.post('/products/:productId/reviews', isLoggedIn, reviewCtrl.createReview)
 
 // ✅ 리뷰 수정
 /**

@@ -3,6 +3,8 @@ const router = express.Router()
 const { isLoggedIn } = require('../middlewares')
 const orderCtrl = require('../ctrl/orderCtrl')
 
+//order.js에선 상품의 즉시 구매와 비회원 주문 조회를 담당합니다.
+
 // ✅ 상품 단건 구매 (상세페이지에서 바로 주문)
 /**
  * @swagger
