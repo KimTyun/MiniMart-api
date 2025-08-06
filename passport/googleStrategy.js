@@ -14,7 +14,6 @@ module.exports = () => {
          },
          async (req, accessToken, refreshToken, profile, done) => {
             // 사용자 DB 조회/등록 로직
-            console.log(profile)
             try {
                const existingUser = await User.findOne({
                   where: {
