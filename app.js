@@ -16,6 +16,7 @@ const initPassport = require('./passport/googleStrategy')
 
 const authRouter = require('./routes/auth/auth')
 
+
 const app = express()
 passportConfig()
 initPassport()
