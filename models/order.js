@@ -4,9 +4,27 @@ module.exports = class Order extends Sequelize.Model {
    static init(sequelize) {
       return super.init(
          {
+            buyer_id: {
+               type: DataTypes.INTEGER,
+               allowNull: true,
+               reference: {
+                  model: 'users',
+                  key: 'id',
+               },
+            },
             status: {
                type: DataTypes.ENUM('PAID', 'SHIPPING', 'DELIVERED'),
-               allowNull: 'false',
+               allowNull: false,
+               defaultValue: 'PAID',
+            },
+            password: {
+               type: DataTypes.STRING(255),
+               allowNull: true,
+            },
+            is_user: {
+               type: DataTypes.BOOLEAN,
+               allowNull: false,
+               defaultValue: false,
             },
          },
          {

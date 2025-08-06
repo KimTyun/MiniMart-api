@@ -5,20 +5,37 @@ const morgan = require('morgan')
 const path = require('path')
 const { sequelize } = require('./models')
 require('dotenv').config()
+const passportConfig = require('./passport')
 const cors = require('cors')
+const swaggerUi = require('swagger-ui-express')
+const swaggerSpec = require('./swagger')
+const passport = require('passport')
+const initPassport = require('./passport/googleStrategy')
+
+// 라우터 등록
+
+
+const authRouter = require('./routes/auth/auth')
+
+
 
 const app = express()
+passportConfig()
+initPassport()
 
 app.set('PORT', process.env.PORT || 8000)
 
+// 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
 sequelize
-   .sync({ force: true })
+   .getQueryInterface()
+   .dropAllTables({ cascade: true })
    .then(() => {
-      console.log('db연결성공')
+      return sequelize.sync({ force: true })
    })
-   .catch((e) => {
-      console.error(e)
+   .then(() => {
+      console.log('DB 강제 초기화 완료 (외래키 무시)')
    })
+   .catch(console.error)
 
 app.use(
    cors({
@@ -29,19 +46,40 @@ app.use(
    express.static(path.join(__dirname, 'uploads')),
    express.json(),
    express.urlencoded({ extended: false }),
-   cookieParser(/*process.env.SECRET_KEY*/),
+   cookieParser(process.env.COOKIE_SECRET),
    session({
       resave: false,
       saveUninitialized: true,
-      secret: process.env.SECRET_KEY,
+      secret: process.env.COOKIE_SECRET,
       cookie: {
          httpOnly: true,
-         signed: false,
-         secure: false,
+         signed: true,
+         secure: true,
       },
-   })
+   }),
+   passport.initialize(),
+   passport.session()
 )
 
-app.listen(app.get('port'), () => {
-   console.log(app.get('port'), '번 포트에서 대기중')
+
+app.use('/auth', authRouter)
+
+app.get('/', (req, res) => {
+   res.send(`
+      <h1>서버 정상 작동중.</h1>
+      http://localhost:${app.get('PORT')}`)
+})
+
+app.get('/', (req, res) => {
+   res.send(`<a href="/auth/google/login">Google 로그인</a>`)
+})
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+
+// 라우터 연결
+app.use('/auth', authRouter)
+
+// 서버 실행
+app.listen(app.get('PORT'), () => {
+   console.log(`http://localhost:${app.get('PORT')} express 실행`)
 })

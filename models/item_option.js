@@ -15,6 +15,7 @@ module.exports = class ItemOption extends Sequelize.Model {
             req_item_yn: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
+               defaultValue: false,
             },
          },
          {

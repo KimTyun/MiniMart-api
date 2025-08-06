@@ -1,3 +1,49 @@
+// (Nodemailer를 사용해 실제 이메일을 보내는 부분입니다)
+//nodemailer 완성 시 이 파일 작동 확인, 일정이 늦어지면 아래 주석처리된 코드 검토 후 사용
+
+const nodemailer = require('nodemailer')
+
+// 1. 메일 서버에 대한 접속 정보를 설정합니다.
+const transporter = nodemailer.createTransport({
+   service: 'gmail', // 예: 'gmail', 'naver', 'daum' 등
+   host: 'smtp.gmail.com', // Gmail의 경우
+   port: 587,
+   secure: false,
+   auth: {
+      user: process.env.EMAIL_USER, // .env 파일에 설정된 구글 아이디
+      pass: process.env.EMAIL_PASS, // .env 파일에 설정된 구글 앱 비밀번호
+   },
+})
+
+// 2. 비밀번호 초기화 인증 코드를 보내는 함수
+exports.sendPasswordResetCode = async (to, code) => {
+   try {
+      const mailOptions = {
+         from: `미니마트 <${process.env.EMAIL_USER}>`,
+         to: to,
+         subject: '[미니마트] 비밀번호 재설정 인증 코드입니다.',
+         html: `
+                <div style="font-family: sans-serif; text-align: center; padding: 20px;">
+                    <h2>비밀번호 재설정 인증 코드</h2>
+                    <p>아래 인증 코드를 입력하여 비밀번호 재설정을 완료해주세요.</p>
+                    <p style="font-size: 24px; font-weight: bold; letter-spacing: 5px; background-color: #f1f1f1; padding: 10px; border-radius: 5px;">
+                        ${code}
+                    </p>
+                    <p>이 코드는 10분간 유효합니다.</p>
+                </div>
+            `,
+      }
+
+      await transporter.sendMail(mailOptions)
+      console.log(`[메일 발송 성공] 받는 사람: ${to}, 인증 코드: ${code}`)
+   } catch (error) {
+      console.error('[메일 발송 실패]', error)
+      // 여기서 에러를 던져야 sendResetEmail 컨트롤러에서 에러를 잡을 수 있습니다.
+      throw new Error('이메일 발송에 실패했습니다.')
+   }
+}
+
+/*
 //전화번호 검증 및 Token 생성
 $('.send-btn').click(function (e) {
    const email = document.getElementsByName('email')[0].ariaValueMax;
@@ -77,3 +123,5 @@ app.post('/password-setting', function(req, res) {
 		return return res.send({success: false, message: 'Error'});
 	}
 });
+
+*/
