@@ -1,9 +1,9 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const transporter = require('../config/mailer')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
-const generateCode = require('../utils/codeGen')
+const codeGen = require('../utils/codeGen')
+const transporter = require('../config/mailer')
 
 const { User } = require('../models')
 
@@ -146,53 +146,40 @@ exports.resetPwByEmail = async (req, res) => {
    }
 
    // 인증코드 생성
-   const code = generateCode()
+   const code = codeGen()
 
-   // 인증코드 메모리에 저장 (이메일 → 코드)
-   emailCodeMap.set(email, code)
+   // 유효시간 5분 후
+   const expires = Date.now() + 5 * 60 * 1000
 
-   exports.resetPwByEmail = async (req, res) => {
-      const { email } = req.body
-      if (!email) {
-         return res.status(400).json({ message: '이메일을 입력해주세요.' })
-      }
+   authCodes[email] = { code, expires }
 
-      try {
-         const code = generateCode()
+   // 메모리에 저장
+   emailCodeStore[email] = { code, expires }
 
-         // 이메일 발송 설정
-         const transporter = nodemailer.createTransport({
-            service: 'Gmail',
-            auth: {
-               user: process.env.EMAIL_USER,
-               pass: process.env.EMAIL_PASS,
-            },
-         })
+   // 메일 전송 설정
+   const transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE,
+      auth: {
+         user: process.env.EMAIL_USER,
+         pass: process.env.EMAIL_PASS,
+      },
+   })
 
-         // 메일 옵션 설정
-         const mailOptions = {
-            from: process.env.EMAIL_USER,
-            to: email,
-            subject: '비밀번호 재설정 인증 코드',
-            text: `인증 코드는 ${code} 입니다.`,
-         }
-
-         // 메일 전송
-         await transporter.sendMail(mailOptions)
-
-         // 인증코드 저장
-         const EXPIRE_MINIUTES = 5
-         const expiresAt = Date.now() + EXPIRE_MINIUTES * 60 * 1000
-
-         authCodes[email] = { code, expiresAt }
-
-         res.status(200).json({ message: '인증 코드가 발송되었습니다. 5분 안에 입력해주세요.' })
-      } catch (error) {
-         console.error('이메일 전송 에러:', error)
-         res.status(500).json({ message: '오류로 인해 이메일 전송에 실패했습니다' })
-      }
+   const mailOptions = {
+      from: `"MiniMart 인증메일" <${process.env.EMAIL_USER}>`,
+      to: email,
+      subject: 'MiniMart 비밀번호 재설정 인증코드',
+      text: `인증코드는 ${code} 입니다. 5분 이내에 입력해주세요.`,
+   }
+   try {
+      await transporter.sendMail(mailOptions)
+      res.status(200).json({ message: '인증코드를 이메일로 전송했습니다.' })
+   } catch (err) {
+      console.error(err)
+      res.status(500).json({ message: '이메일 전송에 실패했습니다.' })
    }
 }
+exports.emailCodeStore = emailCodeStore
 
 // 이메일 인증코드 검증
 exports.sendEmailCode = (req, res) => {
@@ -217,15 +204,37 @@ exports.sendEmailCode = (req, res) => {
       return res.status(400).json({ message: '인증 코드가 일치하지 않습니다.' })
    }
 
-   //검증 완료 => 인증 했으면 삭제
+   //검증 완료 => 인증 됐으면 삭제
    delete authCodes[email]
 
    res.status(200).json({ message: '인증되었습니다.' })
 }
 
 // 인증성공 시 새 비밀번호 등록
-exports.findPwByEmail = (req, res) => {
-   res.send('인증 성공 후 새 비밀번호 등록')
+exports.findPwByEmail = async (req, res) => {
+   const { email, newPassword } = req.body
+
+   if (!email || !newPassword) {
+      return res.status(400).json({ message: '이메일과 새 비밀번호를 입력해주세요.' })
+   }
+
+   try {
+      const user = await User.findOne({ where: { email } })
+
+      if (!user) {
+         return res.status(404).json({ message: '존재하지 않는 사용자입니다.' })
+      }
+
+      const hashed = await bcrypt.hash(newPassword, 10)
+      user.password = hashed
+
+      await user.save()
+
+      res.json({ message: '비밀번호가 성공적으로 변경되었습니다.' })
+   } catch (err) {
+      console.error('비밀번호 변경 오류:', err)
+      res.status(500).json({ message: '서버 오류로 비밀번호를 변경할 수 없습니다.' })
+   }
 }
 
 // 전화번호로 비밀번호 초기화 - 인증코드 전송
