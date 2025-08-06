@@ -1,5 +1,10 @@
 const jwt = require('jsonwebtoken')
 
+/**
+ *  [DEPRECATED] 이 파일은 중복입니다.
+ *  routes 폴더의 middlewares에 연결되어 있는 API들 사용하지 말고 middlewares 폴더에서 이용해주세요**
+ */
+
 // shopmax에서 배운 미들웨어.
 
 // 로그인 상태 확인 미들웨어: 사용자가 로그인된 상태인지 확인
