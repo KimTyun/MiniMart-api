@@ -281,7 +281,7 @@ router.get('/kakao', authCtrl.kakaoLogin) // 리디렉션용 엔드포인트
  *       500:
  *         description: 서버 에러
  */
-router.post('/find/email/send-code', authCtrl.findPwByEmail)
+router.post('/find/email/send-code', authCtrl.resetPwByEmail)
 
 // 이메일 비번 찾기 - 인증코드 확인
 /**

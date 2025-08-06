@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
-const codeGen = require('../utils/codeGen')
+const codeGen = require('../routes/utils/codeGen')
 const transporter = require('../config/mailer')
 
 const { User } = require('../models')
@@ -179,7 +179,6 @@ exports.resetPwByEmail = async (req, res) => {
       res.status(500).json({ message: '이메일 전송에 실패했습니다.' })
    }
 }
-exports.emailCodeStore = emailCodeStore
 
 // 이메일 인증코드 검증
 exports.sendEmailCode = (req, res) => {
@@ -191,6 +190,10 @@ exports.sendEmailCode = (req, res) => {
    const stored = authCodes[email]
    if (!stored) {
       return res.status(400).json({ message: '인증 코드를 요청한 기록이 없거나, 만료되었습니다.' })
+   }
+
+   if (!email) {
+      return res.status(400).json({ message: '이메일을 입력해주세요.' })
    }
 
    const { code: storedCode, expiresAt } = stored
