@@ -147,41 +147,6 @@ router.post('/logout', authCtrl.logout)
  */
 router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
 
-// 구글 간편 로그인
-/**
- * @swagger
- * /auth/google:
- *   post:
- *     summary: 구글로 간편 로그인/가입
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - idToken
- *             properties:
- *               idToken:
- *                 type: string
- *     responses:
- *       200:
- *         description: 로그인 성공 (토큰 발급)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *       401:
- *         description: 유효하지 않은 구글 인증 정보입니다
- *       500:
- *         description: 서버 에러
- */
-router.get('/google', authCtrl.googleLogin) // 리디렉션용 엔드포인트
-
 // 카카오 간편 로그인
 /**
  * @swagger
@@ -245,7 +210,7 @@ router.get('/kakao', authCtrl.kakaoLogin) // 리디렉션용 엔드포인트
  */
 router.post('/find/email/send-code', authCtrl.sendEmailCode)
 
-// 이메일 비번 찾기 - 인증코드 확인 후 비번 변경
+// 이메일 비번 찾기 - 인증코드 확인
 /**
  * @swagger
  * /auth/password/reset:
@@ -278,6 +243,9 @@ router.post('/find/email/send-code', authCtrl.sendEmailCode)
  *         description: 서버 에러
  */
 router.post('/find/email/verify-and-reset', authCtrl.findPwByEmail)
+
+// 이메일 비번 찾기 - 인증 후 비번 변경
+router.post('/reset-password/final', authCtrl.resetPwByEmail)
 
 // 전화번호 비번 찾기 - 인증코드 전송
 /**

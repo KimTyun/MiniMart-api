@@ -2,15 +2,15 @@ const express = require('express')
 const axios = require('axios')
 const jwt = require('jsonwebtoken')
 const router = express.Router()
+const { isLoggedIn } = require('../../middlewares/middlewares')
 
-// 1. 카카오 로그인 URL 생성
-router.get('/kakao', (req, res) => {
-   const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=${process.env.KAKAO_REST_API_KEY}&redirect_uri=${process.env.KAKAO_REDIRECT_URI}`
-   res.redirect(kakaoAuthURL)
+router.get('/', (req, res) => {
+   const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code` + `&client_id=${process.env.KAKAO_REST_API_KEY}` + `&redirect_uri=${process.env.KAKAO_REDIRECT_URI}` + `&prompt=login` // ← 매번 로그인 강제
+   res.json({ url: kakaoAuthURL })
 })
 
 // 2. 카카오 인증 후 Redirect 처리
-router.get('/kakao/callback', async (req, res) => {
+router.get('/callback', async (req, res) => {
    const { code } = req.query
    try {
       // 액세스 토큰 요청
@@ -52,4 +52,22 @@ router.get('/kakao/callback', async (req, res) => {
       res.status(500).json({ error: '카카오 로그인 실패' })
    }
 })
+
+// 3. 사용자 정보 조회 API
+router.get('/me', isLoggedIn, (req, res) => {
+   // isLoggedIn 미들웨어에서 검증 후 req.user에 저장된 정보를 반환
+   const { id, nickname, email } = req.user
+   res.json({
+      id,
+      nickname,
+      email,
+   })
+})
+
+// 4. 로그아웃 API
+router.post('/logout', (req, res) => {
+   // 프론트에서 토큰 삭제하도록 지시
+   res.json({ message: '로그아웃 성공, 로컬 토큰 삭제하세요.' })
+})
+
 module.exports = router
