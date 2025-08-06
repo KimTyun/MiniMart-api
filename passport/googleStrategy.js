@@ -34,7 +34,7 @@ module.exports = () => {
                   provider: 'GOOGLE',
                   role: 'BUYER',
                })
-               return done(newUser)
+               return done(null, newUser)
             } catch (error) {
                console.log('strategy에서의 오류 : ', error)
                return done(error)

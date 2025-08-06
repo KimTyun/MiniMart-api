@@ -1,5 +1,5 @@
 const express = require('express')
-const google = require('./auth_google')
+
 const { isLoggedIn, isAdmin } = require('../middlewares')
 const authCtrl = require('../../ctrl/authCtrl')
 
@@ -14,6 +14,11 @@ router.use('/kakao', kakao)
 router.use('/local', local)
 // auth.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능, 내 정보 관련 가능, 관리자 기능(임시)을 담당합니다.
 console.log('authCtrl.register:', typeof authCtrl.register)
+
+
+router.get('/', () => {
+   console.log('/auth 주소임니다')
+})
 
 // 회원가입
 /**
