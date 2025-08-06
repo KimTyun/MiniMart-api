@@ -15,7 +15,7 @@ const initPassport = require('./passport/googleStrategy')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
-
+const itemRouter = require('./routes/item/item')
 
 const app = express()
 passportConfig()
@@ -71,6 +71,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // 라우터 연결
 app.use('/auth', authRouter)
+app.use('/item', itemRouter)
 
 // 서버 실행
 app.listen(app.get('PORT'), () => {
