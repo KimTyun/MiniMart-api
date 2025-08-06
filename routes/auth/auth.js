@@ -19,6 +19,34 @@ router.get('/', () => {
    console.log('/auth 주소임니다')
 })
 
+// 로그인 여부 확인 (http://localhost:8000/auth/status)
+router.get('/status', async (req, res, next) => {
+   try {
+      if (req.isAuthenticated()) {
+         const { id, name, email, role, profile_img } = req.user
+         res.status(200).json({
+            isAuthenticated: true,
+            user: {
+               id,
+               name,
+               role,
+               email,
+               profile_img,
+            },
+         })
+      } else {
+         // 로그인이 되지 않았을때
+         res.status(200).json({
+            isAuthenticated: false,
+         })
+      }
+   } catch (error) {
+      error.status = 500
+      error.message = '로그인 상태확인 중 오류가 발생했습니다.'
+      next(error)
+   }
+})
+
 // 회원가입
 /**
  * @swagger

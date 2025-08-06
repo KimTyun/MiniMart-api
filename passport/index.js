@@ -22,5 +22,4 @@ module.exports = () => {
    })
    local() //localStrategy.js 파일의 함수를 실행해 Passport에 local을 추가
    google()
-
 }
