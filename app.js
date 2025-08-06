@@ -52,7 +52,6 @@ app.use(
          httpOnly: true,
          signed: true,
          secure: false,
-         sameSite: 'none',
       },
    }),
    passport.initialize(),
@@ -67,9 +66,6 @@ app.get('/', (req, res) => {
       http://localhost:${app.get('PORT')}`)
 })
 
-app.get('/', (req, res) => {
-   res.send(`<a href="/auth/google/login">Google 로그인</a>`)
-})
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // 라우터 연결
@@ -77,5 +73,6 @@ app.use('/auth', authRouter)
 
 // 서버 실행
 app.listen(app.get('PORT'), () => {
-   console.log(`http://localhost:${app.get('PORT')} express 실행`)
+   console.log(`http://localhost:${app.get('PORT')} express 실행
+   http://localhost:${app.get('PORT')}/api-docs api 확인하기`)
 })
