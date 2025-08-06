@@ -25,7 +25,7 @@ const options = {
       ],
    },
    // API 명세가 작성된 모든 js 파일의 경로를 알려줍니다.
-   apis: ['./routes/*.js'],
+   apis: ['./routes/**/*.js'],
 }
 
 const swaggerSpec = swaggerJsdoc(options)

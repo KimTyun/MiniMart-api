@@ -20,6 +20,52 @@ router.get('/', () => {
 })
 
 // 로그인 여부 확인 (http://localhost:8000/auth/status)
+/**
+ * @swagger
+ * /auth/status:
+ *   get:
+ *     summary: 로그인 상태 확인
+ *     description: 사용자의 로그인 상태를 확인하고, 로그인되어 있다면 사용자 정보를 반환합니다.
+ *     tags:
+ *       - Auth
+ *     responses:
+ *       200:
+ *         description: 로그인 여부와 사용자 정보 - 로그인 되어있을시 isAuthenticated:true, user:... , 로그인 안되어있을시 isAuthenticated:false, user:null
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - type: object
+ *                   properties:
+ *                     isAuthenticated:
+ *                       type: boolean
+ *                       example: true
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                           example: 1
+ *                         name:
+ *                           type: string
+ *                           example: 홍길동
+ *                         email:
+ *                           type: string
+ *                           example: test@example.com
+ *                         role:
+ *                           type: string
+ *                           example: user
+ *                         profile_img:
+ *                           type: string
+ *                           example: https://example.com/profile.jpg
+ *                 - type: object
+ *                   properties:
+ *                     isAuthenticated:
+ *                       type: boolean
+ *                       example: false
+ *       500:
+ *         description: 서버 에러
+ */
 router.get('/status', async (req, res, next) => {
    try {
       if (req.isAuthenticated()) {
@@ -184,41 +230,6 @@ router.post('/logout', authCtrl.logout)
  *         description: 서버 에러
  */
 router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
-
-// 구글 간편 로그인
-/**
- * @swagger
- * /auth/google:
- *   post:
- *     summary: 구글로 간편 로그인/가입
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - idToken
- *             properties:
- *               idToken:
- *                 type: string
- *     responses:
- *       200:
- *         description: 로그인 성공 (토큰 발급)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *       401:
- *         description: 유효하지 않은 구글 인증 정보입니다
- *       500:
- *         description: 서버 에러
- */
-router.get('/google', authCtrl.googleLogin) // 리디렉션용 엔드포인트
 
 // 카카오 간편 로그인
 /**
