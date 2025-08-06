@@ -1,9 +1,16 @@
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
+const transporter = require('../config/mailer')
+const crypto = require('crypto')
+const nodemailer = require('nodemailer')
+const generateCode = require('../utils/codeGen')
 
 const { User } = require('../models')
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
+
+//이메일 코드 전송 밑 입력받는 역할
+const authCodes = {}
 
 // routes에 있는 auth폴더의 각각 .js 파일들 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
 
@@ -131,13 +138,89 @@ exports.autoLogin = async (req, res) => {
 }
 
 // 이메일로 비밀번호 초기화 - 인증코드 전송
-exports.resetPwByEmail = (req, res) => {
-   res.send('이메일로 인증 코드 전송')
+exports.resetPwByEmail = async (req, res) => {
+   const { email } = req.body
+
+   if (!email) {
+      return res.status(400).json({ message: '이메일을 입력해주세요.' })
+   }
+
+   // 인증코드 생성
+   const code = generateCode()
+
+   // 인증코드 메모리에 저장 (이메일 → 코드)
+   emailCodeMap.set(email, code)
+
+   exports.resetPwByEmail = async (req, res) => {
+      const { email } = req.body
+      if (!email) {
+         return res.status(400).json({ message: '이메일을 입력해주세요.' })
+      }
+
+      try {
+         const code = generateCode()
+
+         // 이메일 발송 설정
+         const transporter = nodemailer.createTransport({
+            service: 'Gmail',
+            auth: {
+               user: process.env.EMAIL_USER,
+               pass: process.env.EMAIL_PASS,
+            },
+         })
+
+         // 메일 옵션 설정
+         const mailOptions = {
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: '비밀번호 재설정 인증 코드',
+            text: `인증 코드는 ${code} 입니다.`,
+         }
+
+         // 메일 전송
+         await transporter.sendMail(mailOptions)
+
+         // 인증코드 저장
+         const EXPIRE_MINIUTES = 5
+         const expiresAt = Date.now() + EXPIRE_MINIUTES * 60 * 1000
+
+         authCodes[email] = { code, expiresAt }
+
+         res.status(200).json({ message: '인증 코드가 발송되었습니다. 5분 안에 입력해주세요.' })
+      } catch (error) {
+         console.error('이메일 전송 에러:', error)
+         res.status(500).json({ message: '오류로 인해 이메일 전송에 실패했습니다' })
+      }
+   }
 }
 
 // 이메일 인증코드 검증
 exports.sendEmailCode = (req, res) => {
-   res.send('이메일 인증 코드 검증')
+   const { email, code: inputCode } = req.body
+   if (!inputCode) {
+      return res.status(400).json({ message: '인증 코드를 입력해주세요.' })
+   }
+
+   const stored = authCodes[email]
+   if (!stored) {
+      return res.status(400).json({ message: '인증 코드를 요청한 기록이 없거나, 만료되었습니다.' })
+   }
+
+   const { code: storedCode, expiresAt } = stored
+
+   if (Date.now() > expiresAt) {
+      delete authCodes[email]
+      return res.status(400).json({ message: '인증 코드가 만료되었습니다.' })
+   }
+
+   if (inputCode !== storedCode) {
+      return res.status(400).json({ message: '인증 코드가 일치하지 않습니다.' })
+   }
+
+   //검증 완료 => 인증 했으면 삭제
+   delete authCodes[email]
+
+   res.status(200).json({ message: '인증되었습니다.' })
 }
 
 // 인증성공 시 새 비밀번호 등록
