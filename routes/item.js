@@ -1,10 +1,10 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const mainCtrl = require('../ctrl/mainCtrl')
 const itemCtrl = require('../ctrl/itemCtrl')
 
-//item.js에선 상품의 전체 조회, 단일 조회, 메인화면 요구사항에 있던 판매자 리스트 및 물품들의 리스트, 카테고리 등, 또한 상품의 등록, 수정, 삭제를 담당합니다.
+//item.js에선 상품의 전체 조회, 단일 조회, 상세 페이지 전면, 메인화면 요구사항에 있던 판매자 리스트 및 물품들의 리스트, 카테고리 등, 또한 상품의 등록, 수정, 삭제를 담당합니다.
 
 // ✅ 상품 전체 조회 (필터/검색 조건은 쿼리로)
 /**
@@ -230,6 +230,32 @@ router.get('/trending-products', mainCtrl.getTrendingProducts)
  */
 router.get('/my-follows', isLoggedIn, mainCtrl.getMyFollowedSellers)
 
+// ✅ 상단바 카테고리 목록 조회
+/**
+ * @swagger
+ * /categories:
+ *   get:
+ *     summary: 전체 상품 카테고리 목록 조회
+ *     tags: [Category]
+ *     responses:
+ *       200:
+ *         description: 카테고리 목록 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   categoryId:
+ *                     type: integer
+ *                   categoryName:
+ *                     type: string
+ *       500:
+ *         description: 서버 에러
+ */
+router.get('/categories', mainCtrl.getAllCategories)
+
 // ✅ 물품별 카테고리 선택 → 상품 목록 조회
 /**
  * @swagger
@@ -295,6 +321,94 @@ router.get('/category/products/:categoryName', mainCtrl.getProductsByCategory)
  *         description: 서버 에러
  */
 router.get('/category/sellers/:categoryName', mainCtrl.getSellersByCategory)
+
+// ✅ 판매자 물품별 카테고리 선택 → 판매자 물품 목록 조회
+/**
+ * @swagger
+ * /sellers/{sellerId}/products:
+ *   get:
+ *     summary: 특정 판매자의 상품 목록 조회
+ *     tags: [Seller]
+ *     parameters:
+ *       - in: path
+ *         name: sellerId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: 상품 목록을 조회할 판매자의 ID
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 상품 목록 조회 성공
+ *       404:
+ *         description: 해당 판매자를 찾을 수 없습니다
+ *       500:
+ *         description: 서버 에러
+ */
+router.get('/sellers/:sellerId/products', itemCtrl.getSellerItems)
+
+// ✅ 상품 상세 정보 조회 (페이지 핵심 정보)
+/**
+ * @swagger
+ * /products/{productId}:
+ *   get:
+ *     summary: 상품 상세 정보 조회 (페이지 핵심 정보)
+ *     tags: [Product]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: 상품 상세 정보 조회 성공
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 productName:
+ *                   type: string
+ *                 mainImageUrl:
+ *                   type: string
+ *                 hashtags:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                 price:
+ *                   type: number
+ *                 sellerInfo:
+ *                   type: object
+ *                   properties:
+ *                     sellerId:
+ *                       type: integer
+ *                     storeName:
+ *                       type: string
+ *                 options:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       optionName:
+ *                         type: string
+ *                       optionValues:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                 description:
+ *                   type: string
+ *       404:
+ *         description: 상품을 찾을 수 없습니다
+ */
+router.get('/:productId', itemCtrl.getItemDetail)
 
 // ✅ 상품 등록
 /**

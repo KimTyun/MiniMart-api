@@ -41,6 +41,9 @@ module.exports = class User extends Sequelize.Model {
                type: DataTypes.ENUM('BUYER', 'SELLER', 'ADMIN'),
                defaultValue: 'BUYER',
             },
+            age: {
+               type: DataTypes.INTEGER,
+            },
          },
          {
             sequelize,

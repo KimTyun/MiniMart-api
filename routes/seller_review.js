@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares')
+const { isLoggedIn } = require('./middlewares')
 const reviewCtrl = require('../ctrl/reviewCtrl')
 
 // seller_review.js에선 판매자의 리뷰 목록 조회, 등록, 수정과 삭제를 담당합니다.

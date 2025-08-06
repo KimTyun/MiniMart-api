@@ -7,39 +7,34 @@ const { sequelize } = require('./models')
 require('dotenv').config()
 const passportConfig = require('./passport')
 const cors = require('cors')
-
-
-
-
 const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 
+// 라우터 등록
+
+
 const authRouter = require('./routes/auth/auth')
-// const authRouter2 = require('./routes/auth')
 
 
 const app = express()
 passportConfig()
-
-
-console.log('PORT ENV:', process.env.PORT)
-console.log('SECRET_KEY:', process.env.SECRET_KEY)
+initPassport()
 
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-// sequelize
-//    .getQueryInterface()
-//    .dropAllTables({ cascade: true })
-//    .then(() => {
-//       return sequelize.sync({ force: true })
-//    })
-//    .then(() => {
-//       console.log('DB 강제 초기화 완료 (외래키 무시)')
-//    })
-//    .catch(console.error)
+sequelize
+   .getQueryInterface()
+   .dropAllTables({ cascade: true })
+   .then(() => {
+      return sequelize.sync({ force: true })
+   })
+   .then(() => {
+      console.log('DB 강제 초기화 완료 (외래키 무시)')
+   })
+   .catch(console.error)
 
 app.use(
    cors({
@@ -66,12 +61,24 @@ app.use(
 )
 
 
-app.use(express.json())
-
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
-
 app.use('/auth', authRouter)
 
+app.get('/', (req, res) => {
+   res.send(`
+      <h1>서버 정상 작동중.</h1>
+      http://localhost:${app.get('PORT')}`)
+})
+
+app.get('/', (req, res) => {
+   res.send(`<a href="/auth/google/login">Google 로그인</a>`)
+})
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
+
+
+// 라우터 연결
+app.use('/auth', authRouter)
+
+// 서버 실행
 app.listen(app.get('PORT'), () => {
    console.log(`http://localhost:${app.get('PORT')} express 실행`)
 })

@@ -5,9 +5,9 @@ const { User } = require('../models')
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
 
-// routes에 있는 auth.js의 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
+// routes에 있는 auth폴더의 각각 .js 파일들 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
 
-exports.signup = async (req, res) => {
+exports.register = async (req, res) => {
    try {
       const { email, password, nickname, role = 'buyer' } = req.body
 
@@ -26,9 +26,9 @@ exports.signup = async (req, res) => {
          password: hash,
          nickname,
          role,
+         provider: 'local',
       })
-      res.send('회원가입 요청됨')
-      res.status(201).json({ message: '회원가입 완료', user })
+      return res.status(201).json({ message: '회원가입 완료', user })
    } catch (err) {
       console.error(err)
       res.status(500).json({ message: '서버 에러' })
@@ -54,8 +54,17 @@ exports.login = async (req, res) => {
       // JWT 발급
       const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '365d' })
 
-      res.send('로그인 요청됨')
-      res.json({ message: '로그인 성공', token })
+      return res.json({ message: '로그인 성공', token })
+   } catch (err) {
+      console.error(err)
+      res.status(500).json({ message: '서버 에러' })
+   }
+}
+
+exports.logout = async (req, res) => {
+   try {
+      // 로그아웃은 프론트에서 토큰 삭제로 처리하므로, 백엔드는 그냥 메시지만 전달
+      res.status(200).json({ message: '로그아웃 되었습니다.' })
    } catch (err) {
       console.error(err)
       res.status(500).json({ message: '서버 에러' })
@@ -111,4 +120,88 @@ exports.updateMe = async (req, res) => {
       console.error(error)
       res.status(500).json({ message: '서버 에러' })
    }
+}
+
+exports.deleteAccount = async (req, res) => {
+   res.status(200).json({ message: '회원 탈퇴 성공', user: req.user })
+}
+
+exports.autoLogin = async (req, res) => {
+   res.status(200).json({ message: '자동 로그인 성공', user: req.user })
+}
+
+// 이메일로 비밀번호 초기화 - 인증코드 전송
+exports.resetPwByEmail = (req, res) => {
+   res.send('이메일로 인증 코드 전송')
+}
+
+// 이메일 인증코드 검증
+exports.sendEmailCode = (req, res) => {
+   res.send('이메일 인증 코드 검증')
+}
+
+// 인증성공 시 새 비밀번호 등록
+exports.findPwByEmail = (req, res) => {
+   res.send('인증 성공 후 새 비밀번호 등록')
+}
+
+// 전화번호로 비밀번호 초기화 - 인증코드 전송
+exports.sendPhoneCode = (req, res) => {
+   res.send('전화번호로 인증 코드 전송')
+}
+
+// 전화번호 인증코드 검증
+exports.verifyPhoneCode = (req, res) => {
+   res.send('전화번호 인증 코드 검증')
+}
+
+// 인증성공 시 새 비밀번호 등록
+exports.findPwByPhone = (req, res) => {
+   res.send('전화번호 인증 성공 후 새 비밀번호 등록')
+}
+
+// 구글 소셜 로그인
+exports.googleLogin = (req, res) => {
+   res.send('구글 로그인')
+}
+
+// 카카오 소셜 로그인
+exports.kakaoLogin = (req, res) => {
+   res.send('카카오 로그인')
+}
+
+exports.getSeller = (req, res) => {
+   res.send('판매자 자격 신청')
+}
+
+exports.approveSeller = (req, res) => {
+   res.send('판매자 자격 승인')
+}
+
+exports.getAllUsers = (req, res) => {
+   res.send('사용자 전체 목록')
+}
+
+exports.editUserInfo = (req, res) => {
+   res.send('사용자 정보 수정')
+}
+
+exports.deleteUser = (req, res) => {
+   res.send('사용자 삭제')
+}
+
+exports.getAllOrders = (req, res) => {
+   res.send('주문 전체 목록')
+}
+
+exports.editOrderInfo = (req, res) => {
+   res.send('주문 수정(관리자)')
+}
+
+exports.deleteOrder = (req, res) => {
+   res.send('주문 삭제(관리자)')
+}
+
+exports.answerQna = (req, res) => {
+   res.send('문의 답변')
 }
