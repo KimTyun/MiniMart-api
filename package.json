@@ -26,6 +26,7 @@
       "nodemailer": "^7.0.5",
       "passport": "^0.7.0",
       "passport-google-oauth20": "^2.0.0",
+      "passport-kakao": "^1.0.1",
       "passport-local": "^1.0.0",
       "readdirp": "^4.1.2",
       "sequelize": "^6.37.7",

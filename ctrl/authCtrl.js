@@ -17,7 +17,7 @@ const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString(
 // 회원가입
 exports.register = async (req, res) => {
    try {
-      const { email, password, nickname, role = 'buyer' } = req.body
+      const { name, email, address, password, phone_number, age, nickname, role = 'buyer' } = req.body
 
       // 이메일 중복 확인
       const existing = await User.findOne({ where: { email } })
@@ -30,10 +30,14 @@ exports.register = async (req, res) => {
 
       // 유저 생성
       const user = await User.create({
+         name,
          email,
+         address,
          password: hash,
          nickname,
+         age,
          role,
+         phone_number,
          provider: 'local',
       })
       return res.status(201).json({ message: '회원가입 완료', user })
