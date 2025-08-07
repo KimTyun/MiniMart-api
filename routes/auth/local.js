@@ -146,75 +146,90 @@ router.post('/logout', authCtrl.logout)
  */
 router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
 
-// 카카오 간편 로그인
-/**
- * @swagger
- * /auth/kakao:
- *   post:
- *     summary: 카카오로 간편 로그인/가입
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - authorizationCode
- *             properties:
- *               authorizationCode:
- *                 type: string
- *     responses:
- *       200:
- *         description: 로그인 성공 (토큰 발급)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *       401:
- *         description: 유효하지 않은 카카오 인증 정보입니다
- *       500:
- *         description: 서버 에러
- */
-router.get('/kakao', authCtrl.kakaoLogin) // 리디렉션용 엔드포인트
-
 // 내 정보 조회
 /**
  * @swagger
- * /users/me:
+ * /mypage:
  *   get:
- *     summary: 내 정보 조회
+ *     summary: 내 정보 + 주문 내역 + 팔로우한 판매자 목록 조회
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 내 정보 조회 성공
+ *         description: 내 정보 전체 조회 성공
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 email:
- *                   type: string
- *                 name:
- *                   type: string
- *                 address:
- *                   type: string
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         email:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         address:
+ *                           type: string
+ *                         phone_number:
+ *                           type: string
+ *                         profile_img:
+ *                           type: string
+ *                         provider:
+ *                           type: string
+ *                         role:
+ *                           type: string
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                     orders:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           order_id:
+ *                             type: integer
+ *                           product_name:
+ *                             type: string
+ *                           product_image:
+ *                             type: string
+ *                           order_date:
+ *                             type: string
+ *                             format: date
+ *                           status:
+ *                             type: string
+ *                             example: "배송완료"
+ *                     followings:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           seller_id:
+ *                             type: integer
+ *                           seller_name:
+ *                             type: string
+ *                           seller_profile_img:
+ *                             type: string
  *       401:
- *         description: 로그인이 필요합니다
+ *         description: 인증이 필요합니다
  *       500:
  *         description: 서버 에러
  */
-router.get('/users/me', isLoggedIn, authCtrl.getMe)
+router.get('/mypage', isLoggedIn, authCtrl.getMe)
 
 // 내 정보 수정
 /**
  * @swagger
- * /users/me:
+ * /mypage/edit:
  *   patch:
  *     summary: 내 정보 수정
  *     tags: [User]
@@ -241,12 +256,12 @@ router.get('/users/me', isLoggedIn, authCtrl.getMe)
  *       500:
  *         description: 서버 에러
  */
-router.patch('/users/me', isLoggedIn, authCtrl.updateMe)
+router.patch('/mypage/edit', isLoggedIn, authCtrl.updateMe)
 
 // 회원 탈퇴
 /**
  * @swagger
- * /users/me:
+ * /mypage/delete:
  *   delete:
  *     summary: 회원 탈퇴
  *     tags: [User]
@@ -260,7 +275,69 @@ router.patch('/users/me', isLoggedIn, authCtrl.updateMe)
  *       500:
  *         description: 서버 에러
  */
-router.delete('/users/me', isLoggedIn, authCtrl.deleteAccount)
+router.delete('/mypage/delete', isLoggedIn, authCtrl.deleteAccount)
+
+// 이메일 비번 찾기 - 인증코드 전송
+/**
+ * @swagger
+ * /auth/password/reset-request:
+ *   post:
+ *     summary: 비밀번호 재설정 요청 (인증 코드 발송)
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 인증 코드 발송 요청 성공
+ *       404:
+ *         description: 가입되지 않은 이메일입니다
+ *       500:
+ *         description: 서버 에러
+ */
+router.post('/find/email/send-code', authCtrl.sendEmailCode)
+
+// 이메일 비번 찾기 - 인증코드 확인
+/**
+ * @swagger
+ * /auth/password/reset:
+ *   post:
+ *     summary: 비밀번호 재설정 확정
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - verificationCode
+ *               - newPassword
+ *             properties:
+ *               email:
+ *                 type: string
+ *               verificationCode:
+ *                 type: string
+ *               newPassword:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: 비밀번호 변경 성공
+ *       400:
+ *         description: 인증 코드가 올바르지 않습니다
+ *       500:
+ *         description: 서버 에러
+ */
+router.post('/find/email/verify-and-reset', authCtrl.resetPwByEmail)
 
 // 전화번호 비번 찾기 - 인증코드 전송
 /**

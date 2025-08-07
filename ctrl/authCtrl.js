@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 
-const { User } = require('../models')
+const { User, Order, Follow } = require('../models')
 const { sendMail } = require('../routes/utils/mailer') // 컨픽에서 메일 전송 함수 호출
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
@@ -85,9 +85,9 @@ exports.logout = async (req, res) => {
    }
 }
 
-// 내 정보 조회
 exports.getMe = async (req, res) => {
    try {
+      // 1. 유저 정보
       const user = await User.findByPk(req.user.id, {
          attributes: ['id', 'email', 'name', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
       })
@@ -96,7 +96,56 @@ exports.getMe = async (req, res) => {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      res.json({ user })
+      // 2. 주문 내역 (Order + Product 조인)
+      const orders = await Order.findAll({
+         where: { user_id: req.user.id },
+         include: [
+            {
+               model: Product,
+               attributes: ['name', 'image_url'],
+            },
+         ],
+         order: [['createdAt', 'DESC']],
+      })
+
+      const formattedOrders = orders.map((order) => ({
+         order_id: order.id,
+         product_name: order.Product.name,
+         product_image: order.Product.image_url,
+         order_date: order.createdAt.toISOString().split('T')[0],
+         status: order.status,
+      }))
+
+      // 3. 팔로잉한 판매자 목록 (Follow + User 조인)
+      const follows = await Follow.findAll({
+         where: { follower_id: req.user.id },
+         include: [
+            {
+               model: User,
+               as: 'Following',
+               attributes: ['id', 'name', 'profile_img'],
+            },
+         ],
+      })
+
+      const formattedFollowings = follows.map((f) => ({
+         seller_id: f.Following.id,
+         seller_name: f.Following.name,
+         seller_profile_img: f.Following.profile_img,
+      }))
+
+      // 4. 응답
+      res.status(200).json({
+         success: true,
+         data: {
+            user: {
+               ...user.toJSON(),
+               createdAt: user.createdAt.toISOString().split('T')[0],
+            },
+            orders: formattedOrders,
+            followings: formattedFollowings,
+         },
+      })
    } catch (error) {
       console.error(error)
       res.status(500).json({ message: '서버 에러' })
@@ -142,7 +191,21 @@ exports.deleteAccount = async (req, res) => {
    try {
       const userId = req.user.id
 
+      // 1. 사용자 DB에서 삭제
       await User.destroy({ where: { id: userId } })
+
+      // 2. 세션이 있을 경우 세션 삭제
+      if (req.session) {
+         req.session.destroy((err) => {
+            if (err) {
+               console.error('세션 삭제 실패:', err)
+               return res.status(500).json({ message: '회원 탈퇴는 되었지만, 세션 삭제에 실패했습니다.' })
+            }
+         })
+      }
+
+      // 3. 클라이언트 쿠키 삭제
+      res.clearCookie('connect.sid')
 
       res.status(200).json({ message: '회원 탈퇴 성공' })
    } catch (error) {
@@ -237,45 +300,9 @@ exports.googleLogin = (req, res) => {
    res.send('구글 로그인')
 }
 
-// 카카오 소셜 로그인
-exports.kakaoLogin = (req, res) => {
-   res.send('카카오 로그인')
-}
-
+// 판매자 자격 신청
 exports.getSeller = (req, res) => {
    res.send('판매자 자격 신청')
-}
-
-exports.approveSeller = (req, res) => {
-   res.send('판매자 자격 승인')
-}
-
-exports.getAllUsers = (req, res) => {
-   res.send('사용자 전체 목록')
-}
-
-exports.editUserInfo = (req, res) => {
-   res.send('사용자 정보 수정')
-}
-
-exports.deleteUser = (req, res) => {
-   res.send('사용자 삭제')
-}
-
-exports.getAllOrders = (req, res) => {
-   res.send('주문 전체 목록')
-}
-
-exports.editOrderInfo = (req, res) => {
-   res.send('주문 수정(관리자)')
-}
-
-exports.deleteOrder = (req, res) => {
-   res.send('주문 삭제(관리자)')
-}
-
-exports.answerQna = (req, res) => {
-   res.send('문의 답변')
 }
 
 // [추가] 전화번호로 사용자 찾기 컨트롤러
