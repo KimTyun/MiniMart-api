@@ -1,11 +1,21 @@
 const nodemailer = require('nodemailer')
+require('dotenv').config()
 
 const transporter = nodemailer.createTransport({
    service: 'gmail',
+   host: 'smtp.gmail.com',
+   port: 587,
+   secure: false,
    auth: {
-      user: 'your_email@gmail.com',
-      pass: 'your_app_password', // 앱 비밀번호
+      user: 'only05250517@gmail.com',
+      pass: 'ceoo vvxo opeo polp',
    },
 })
 
-module.exports = transporter
+const sendMail = async (mailOptions) => {
+   return transporter.sendMail(mailOptions)
+}
+
+module.exports = {
+   sendMail,
+}

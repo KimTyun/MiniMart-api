@@ -7,7 +7,6 @@ require('dotenv').config()
 const router = express.Router()
 
 // local.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능, 내 정보 관련 가능, 관리자 기능(임시)을 담당합니다.
-console.log('authCtrl.register:', typeof authCtrl.register)
 
 // 회원가입
 /**
@@ -242,10 +241,7 @@ router.post('/find/email/send-code', authCtrl.sendEmailCode)
  *       500:
  *         description: 서버 에러
  */
-router.post('/find/email/verify-and-reset', authCtrl.findPwByEmail)
-
-// 이메일 비번 찾기 - 인증 후 비번 변경
-router.post('/reset-password/final', authCtrl.resetPwByEmail)
+router.post('/find/email/verify-and-reset', authCtrl.resetPwByEmail)
 
 // 전화번호 비번 찾기 - 인증코드 전송
 /**

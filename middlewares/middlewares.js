@@ -2,6 +2,12 @@ const jwt = require('jsonwebtoken')
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
 const { ROLE, ROLE_MAP } = require('../constants/role')
 
+/**
+ * isAdmin, isSeller, isLoggedIn 등을 통합한 미들웨어 입니다. 매개변수로 어떤 역할만 허용할 것인가를 정할 수 있습니다. 예를 들어 isAdmin을 사용해야하는 경우 authorize(ROLE.ADMIN) 이렇게 사용할 경우 동일한 기능을 합니다. 여러가지 역할을 허용해야 할 경우 비트연산자 | 를 활용하면 여러가지 역할도 구분할 수 있습니다. 예를들어 authorize(ROLE.ADMIN | ROLE.SELLER) 이렇게 사용할 경우 어드민과 판매자만 허용되고 비회원, 구매자 역할은 허용되지 않습니다. 모든 회원만 허용하고 싶으면 ROLE.ALL을 사용하면 됩니다.
+ *
+ * @param {ROLE} requiredRolesBitmask constants 폴더의 role.js 를 가져와서 사용합니다.
+ * @returns
+ */
 exports.authorize = function (requiredRolesBitmask) {
    return (req, res, next) => {
       // 로그인이 되지 않았을경우 에러 미들웨어로 에러 전송
@@ -71,7 +77,6 @@ exports.isLoggedIn = (req, res, next) => {
    }
 }
 
-//판매자 권한 확인
 exports.isSeller = (req, res, next) => {
    // 로그인 상태 확인
    if (req.isAuthenticated()) {
@@ -91,7 +96,6 @@ exports.isSeller = (req, res, next) => {
    }
 }
 
-// 관리자 권한 확인 미들웨어
 exports.isAdmin = (req, res, next) => {
    // 로그인 상태 확인
    if (req.isAuthenticated()) {
