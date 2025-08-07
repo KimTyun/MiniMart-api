@@ -3,6 +3,8 @@ const express = require('express')
 const { isLoggedIn, isAdmin } = require('../middlewares')
 const authCtrl = require('../../ctrl/authCtrl')
 
+const User = require('../../models/user')
+
 const router = express.Router()
 
 const google = require('./google')
@@ -13,7 +15,6 @@ router.use('/google', google)
 router.use('/kakao', kakao)
 router.use('/local', local)
 // auth.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능, 내 정보 관련 가능, 관리자 기능(임시)을 담당합니다.
-console.log('authCtrl.register:', typeof authCtrl.register)
 
 router.get('/', () => {
    console.log('/auth 주소임니다')
@@ -419,6 +420,23 @@ router.post('/find/phone/verify-and-reset', authCtrl.verifyPhoneCode)
  *         description: 서버 에러
  */
 router.get('/users/me', isLoggedIn, authCtrl.getMe)
+
+// 로그인된 사용자 정보 가져오기
+router.get('/me', isLoggedIn, async (req, res) => {
+   try {
+      const user = await User.findByPk(req.user.id, {
+         attributes: ['id', 'name', 'email', 'address', 'phone_number', 'profile_img', 'role', 'age', 'provider'],
+      })
+      if (!user) {
+         console.log('req.user:', req.user)
+         return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' })
+      }
+      res.json(user)
+   } catch (err) {
+      console.error(err)
+      res.status(500).json({ success: false, message: '사용자 정보 불러오기 실패' })
+   }
+})
 
 // 내 정보 수정
 /**
