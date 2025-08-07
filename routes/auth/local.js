@@ -242,10 +242,7 @@ router.post('/find/email/send-code', authCtrl.sendEmailCode)
  *       500:
  *         description: 서버 에러
  */
-router.post('/find/email/verify-and-reset', authCtrl.findPwByEmail)
-
-// 이메일 비번 찾기 - 인증 후 비번 변경
-router.post('/reset-password/final', authCtrl.resetPwByEmail)
+router.post('/find/email/verify-and-reset', authCtrl.resetPwByEmail)
 
 // 전화번호 비번 찾기 - 인증코드 전송
 /**
