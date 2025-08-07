@@ -14,7 +14,7 @@ const local = require('./local')
 router.use('/google', google)
 router.use('/kakao', kakao)
 router.use('/local', local)
-// auth.js에선 로그인 여부 확인 및 자동 로그인 및 소셜 로그인 기능을 담당합니다.
+// auth.js에선 로그인 여부 확인 및 자동 로그인 기능 등을 담당합니다.
 
 router.get('/', () => {
    console.log('/auth 주소임니다')
@@ -128,41 +128,6 @@ router.get('/status', async (req, res, next) => {
  *         description: 서버 에러
  */
 router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
-
-// 카카오 간편 로그인
-/**
- * @swagger
- * /auth/kakao:
- *   post:
- *     summary: 카카오로 간편 로그인/가입
- *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - authorizationCode
- *             properties:
- *               authorizationCode:
- *                 type: string
- *     responses:
- *       200:
- *         description: 로그인 성공 (토큰 발급)
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 accessToken:
- *                   type: string
- *       401:
- *         description: 유효하지 않은 카카오 인증 정보입니다
- *       500:
- *         description: 서버 에러
- */
-router.get('/kakao', authCtrl.kakaoLogin) // 리디렉션용 엔드포인트
 
 // 로그인된 사용자 정보 가져오기
 router.get('/me', isLoggedIn, async (req, res) => {

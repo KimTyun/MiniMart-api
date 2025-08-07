@@ -288,7 +288,7 @@ router.delete('/users/me', isLoggedIn, authCtrl.deleteAccount)
  *       500:
  *         description: 서버 에러
  */
-router.post('/find/phone/send-code', authCtrl.findUserByPhone)
+router.post('/find-by-phone', authCtrl.findUserByPhone)
 
 // 전화번호 비번 찾기 - 인증코드 확인 후 비번 변경
 /**
@@ -322,6 +322,6 @@ router.post('/find/phone/send-code', authCtrl.findUserByPhone)
  *       500:
  *         description: 서버 에러
  */
-router.post('/find/phone/verify-and-reset', authCtrl.sendResetEmail)
+router.post('/send-reset-email', authCtrl.sendResetEmail)
 
 module.exports = router
