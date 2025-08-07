@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 
-const { User } = require('../models')
+const { User, Order, Follow } = require('../models')
 const { sendMail } = require('../routes/utils/mailer') // 컨픽에서 메일 전송 함수 호출
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
@@ -85,9 +85,9 @@ exports.logout = async (req, res) => {
    }
 }
 
-// 내 정보 조회
 exports.getMe = async (req, res) => {
    try {
+      // 1. 유저 정보
       const user = await User.findByPk(req.user.id, {
          attributes: ['id', 'email', 'name', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
       })
@@ -96,11 +96,54 @@ exports.getMe = async (req, res) => {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
+      // 2. 주문 내역 (Order + Product 조인)
+      const orders = await Order.findAll({
+         where: { user_id: req.user.id },
+         include: [
+            {
+               model: Product,
+               attributes: ['name', 'image_url'],
+            },
+         ],
+         order: [['createdAt', 'DESC']],
+      })
+
+      const formattedOrders = orders.map((order) => ({
+         order_id: order.id,
+         product_name: order.Product.name,
+         product_image: order.Product.image_url,
+         order_date: order.createdAt.toISOString().split('T')[0],
+         status: order.status,
+      }))
+
+      // 3. 팔로잉한 판매자 목록 (Follow + User 조인)
+      const follows = await Follow.findAll({
+         where: { follower_id: req.user.id },
+         include: [
+            {
+               model: User,
+               as: 'Following',
+               attributes: ['id', 'name', 'profile_img'],
+            },
+         ],
+      })
+
+      const formattedFollowings = follows.map((f) => ({
+         seller_id: f.Following.id,
+         seller_name: f.Following.name,
+         seller_profile_img: f.Following.profile_img,
+      }))
+
+      // 4. 응답
       res.status(200).json({
          success: true,
          data: {
-            ...user.toJSON(),
-            createdAt: user.createdAt.toISOString().split('T')[0], // 날짜 정제
+            user: {
+               ...user.toJSON(),
+               createdAt: user.createdAt.toISOString().split('T')[0],
+            },
+            orders: formattedOrders,
+            followings: formattedFollowings,
          },
       })
    } catch (error) {

@@ -151,13 +151,13 @@ router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
  * @swagger
  * /mypage:
  *   get:
- *     summary: 내 정보 조회
+ *     summary: 내 정보 + 주문 내역 + 팔로우한 판매자 목록 조회
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: 내 정보 조회 성공
+ *         description: 내 정보 전체 조회 성공
  *         content:
  *           application/json:
  *             schema:
@@ -169,27 +169,58 @@ router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
  *                 data:
  *                   type: object
  *                   properties:
- *                     id:
- *                       type: integer
- *                     email:
- *                       type: string
- *                     name:
- *                       type: string
- *                     address:
- *                       type: string
- *                     phone_number:
- *                       type: string
- *                     profile_img:
- *                       type: string
- *                     provider:
- *                       type: string
- *                     role:
- *                       type: string
- *                     createdAt:
- *                       type: string
- *                       format: date
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         email:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         address:
+ *                           type: string
+ *                         phone_number:
+ *                           type: string
+ *                         profile_img:
+ *                           type: string
+ *                         provider:
+ *                           type: string
+ *                         role:
+ *                           type: string
+ *                         createdAt:
+ *                           type: string
+ *                           format: date-time
+ *                     orders:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           order_id:
+ *                             type: integer
+ *                           product_name:
+ *                             type: string
+ *                           product_image:
+ *                             type: string
+ *                           order_date:
+ *                             type: string
+ *                             format: date
+ *                           status:
+ *                             type: string
+ *                             example: "배송완료"
+ *                     followings:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           seller_id:
+ *                             type: integer
+ *                           seller_name:
+ *                             type: string
+ *                           seller_profile_img:
+ *                             type: string
  *       401:
- *         description: 로그인이 필요합니다
+ *         description: 인증이 필요합니다
  *       500:
  *         description: 서버 에러
  */
