@@ -2,9 +2,11 @@ const express = require('express')
 const router = express.Router()
 const { authorize } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
-const { Item, ItemOption } = require('../../models')
+const { Item, ItemOption, ItemImg, Hashtag } = require('../../models')
+const { sequelize } = require('../../models')
 const fs = require('fs')
 const multer = require('multer')
+const path = require('path')
 
 try {
    fs.readdirSync('uploads/item') //해당 폴더가 있는지 확인
@@ -33,9 +35,9 @@ const upload = multer({
 
 //상품 등록
 /**
- * name , price, stock_number description, status, is_sale, sale options({name, price, req_item_yn}), img
+ * name , price, stock_number description, status, is_sale, sale options([{name, price, req_item_yn}]), img, hashtags[tag1,tag2,tag3]
  */
-router.post('/', authorize(ROLE.SELLER), upload.array('img'), async (req, res, next) => {
+router.post('/', /*authorize(ROLE.SELLER),*/ upload.array('img'), async (req, res, next) => {
    const transaction = await sequelize.transaction()
    try {
       if (!req.files || req.files.length === 0) {
@@ -44,7 +46,7 @@ router.post('/', authorize(ROLE.SELLER), upload.array('img'), async (req, res, n
          throw error
       }
 
-      const { name, price, stock_number, description, status, is_sale, sale, options } = req.body
+      const { name, price, stock_number, description, status, is_sale, sale, options, hashtags } = req.body
 
       const newItem = await Item.create(
          {
@@ -86,6 +88,20 @@ router.post('/', authorize(ROLE.SELLER), upload.array('img'), async (req, res, n
             )
          )
       )
+
+      const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
+
+      if (parsedHashtags) {
+         const hashtagInstances = await Promise.all(
+            parsedHashtags.map((hashtag) => {
+               return Hashtag.findOrCreate({
+                  where: { content: hashtag },
+               }).then(([instance]) => instance)
+            }),
+            { transaction }
+         )
+         await newItem.addHashtags(hashtagInstances, { transaction })
+      }
 
       await transaction.commit()
       res.status(201).json({
