@@ -294,7 +294,7 @@ router.get('/kakao', authCtrl.kakaoLogin) // 리디렉션용 엔드포인트
  */
 router.post('/find/email/send-code', authCtrl.sendEmailCode)
 
-// 이메일 비번 찾기 - 인증코드 확인 후 비번 변경
+// 이메일 비번 찾기 - 인증코드 확인
 /**
  * @swagger
  * /auth/password/reset:
@@ -327,6 +327,9 @@ router.post('/find/email/send-code', authCtrl.sendEmailCode)
  *         description: 서버 에러
  */
 router.post('/find/email/verify-and-reset', authCtrl.findPwByEmail)
+
+// 이메일 비번 찾기 - 인증 후 비번 변경
+router.post('/reset-password/final', authCtrl.resetPwByEmail)
 
 // 전화번호 비번 찾기 - 인증코드 전송
 /**
