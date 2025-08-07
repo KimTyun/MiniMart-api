@@ -5,8 +5,7 @@ mysql 타임존 변경(KST로 맞춰줌) 쿼리문 실행 -  Korea Standard Time
 SET GLOBAL time_zone = '+09:00';
 SET SESSION time_zone = '+09:00';
 */
-console.log('DB_DEV_USERNAME:', process.env.DB_DEV_USERNAME)
-console.log(process.env.NODE_ENV)
+
 module.exports = {
    development: {
       username: process.env.DB_DEV_USERNAME,

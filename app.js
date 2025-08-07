@@ -11,7 +11,7 @@ const swaggerUi = require('swagger-ui-express')
 const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
-
+const fs = require('fs')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
@@ -34,6 +34,14 @@ app.set('PORT', process.env.PORT || 8000)
 //       console.log('DB 강제 초기화 완료 (외래키 무시)')
 //    })
 //    .catch(console.error)
+
+// uploads 폴더가 없을 경우 새로 생성
+try {
+   fs.readdirSync('uploads') //해당 폴더가 있는지 확인
+} catch (error) {
+   console.log('uploads 폴더가 없어 uploads 폴더를 생성합니다.')
+   fs.mkdirSync('uploads') //폴더 생성
+}
 
 app.use(
    cors({
