@@ -7,7 +7,6 @@ require('dotenv').config()
 const router = express.Router()
 
 // local.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능, 내 정보 관련 가능, 관리자 기능(임시)을 담당합니다.
-console.log('authCtrl.register:', typeof authCtrl.register)
 
 // 회원가입
 /**

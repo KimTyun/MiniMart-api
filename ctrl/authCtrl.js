@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
-const { sendMail } = require('../utils/mailer') // 유틸에서 메일 전송 함수 호출
+const { sendMail } = require('../routes/utils/mailer') // 유틸에서 메일 전송 함수 호출
 
 const { User } = require('../models')
 
