@@ -96,7 +96,13 @@ exports.getMe = async (req, res) => {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      res.json({ user })
+      res.status(200).json({
+         success: true,
+         data: {
+            ...user.toJSON(),
+            createdAt: user.createdAt.toISOString().split('T')[0], // 날짜 정제
+         },
+      })
    } catch (error) {
       console.error(error)
       res.status(500).json({ message: '서버 에러' })
@@ -142,7 +148,21 @@ exports.deleteAccount = async (req, res) => {
    try {
       const userId = req.user.id
 
+      // 1. 사용자 DB에서 삭제
       await User.destroy({ where: { id: userId } })
+
+      // 2. 세션이 있을 경우 세션 삭제
+      if (req.session) {
+         req.session.destroy((err) => {
+            if (err) {
+               console.error('세션 삭제 실패:', err)
+               return res.status(500).json({ message: '회원 탈퇴는 되었지만, 세션 삭제에 실패했습니다.' })
+            }
+         })
+      }
+
+      // 3. 클라이언트 쿠키 삭제
+      res.clearCookie('connect.sid')
 
       res.status(200).json({ message: '회원 탈퇴 성공' })
    } catch (error) {
@@ -237,45 +257,9 @@ exports.googleLogin = (req, res) => {
    res.send('구글 로그인')
 }
 
-// 카카오 소셜 로그인
-exports.kakaoLogin = (req, res) => {
-   res.send('카카오 로그인')
-}
-
+// 판매자 자격 신청
 exports.getSeller = (req, res) => {
    res.send('판매자 자격 신청')
-}
-
-exports.approveSeller = (req, res) => {
-   res.send('판매자 자격 승인')
-}
-
-exports.getAllUsers = (req, res) => {
-   res.send('사용자 전체 목록')
-}
-
-exports.editUserInfo = (req, res) => {
-   res.send('사용자 정보 수정')
-}
-
-exports.deleteUser = (req, res) => {
-   res.send('사용자 삭제')
-}
-
-exports.getAllOrders = (req, res) => {
-   res.send('주문 전체 목록')
-}
-
-exports.editOrderInfo = (req, res) => {
-   res.send('주문 수정(관리자)')
-}
-
-exports.deleteOrder = (req, res) => {
-   res.send('주문 삭제(관리자)')
-}
-
-exports.answerQna = (req, res) => {
-   res.send('문의 답변')
 }
 
 // [추가] 전화번호로 사용자 찾기 컨트롤러
