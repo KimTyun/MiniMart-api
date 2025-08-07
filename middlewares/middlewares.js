@@ -58,17 +58,21 @@ exports.verifyToken = (req, res, next) => {
 
 exports.isLoggedIn = (req, res, next) => {
    const authHeader = req.headers.authorization
+   console.log('💥 요청된 Authorization:', req.headers.authorization)
+
    if (!authHeader) {
       return res.status(401).json({ message: '인증 토큰이 필요합니다.' })
    }
-   const token = authHeader.split(' ')[1] // "Bearer <TOKEN>" 형식
+
+   const token = authHeader.split(' ')[1]
 
    try {
-      // 토큰을 검증하고, 성공 시 디코딩된 정보를 req.user에 저장
-      req.user = jwt.verify(token, process.env.JWT_SECRET)
-      return next()
+      const decoded = jwt.verify(token, SECRET) // ⬅️ 여기도 동일한 SECRET 사용
+      console.log('🧠 디코딩된 사용자:', decoded)
+      req.user = decoded
+      next()
    } catch (error) {
-      // 토큰이 유효하지 않은 경우
+      console.error('❌ 토큰 디코딩 실패:', error)
       return res.status(401).json({ message: '유효하지 않은 토큰입니다.' })
    }
 }
