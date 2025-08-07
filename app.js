@@ -24,16 +24,16 @@ initPassport()
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-// sequelize
-//    .getQueryInterface()
-//    .dropAllTables({ cascade: true })
-//    .then(() => {
-//       return sequelize.sync({ force: true })
-//    })
-//    .then(() => {
-//       console.log('DB 강제 초기화 완료 (외래키 무시)')
-//    })
-//    .catch(console.error)
+sequelize
+   .getQueryInterface()
+   .dropAllTables({ cascade: true })
+   .then(() => {
+      return sequelize.sync({ force: true })
+   })
+   .then(() => {
+      console.log('DB 강제 초기화 완료 (외래키 무시)')
+   })
+   .catch(console.error)
 
 // uploads 폴더가 없을 경우 새로 생성
 try {
@@ -80,6 +80,20 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // 라우터 연결
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
+
+app.use((err, req, res, next) => {
+   const statusCode = err.status || 500
+   const errorMessage = err.message || '서버 내부 오류'
+   if (process.env.NODE_ENV === 'development') {
+      console.log(err)
+   }
+
+   res.status(statusCode).json({
+      success: false,
+      message: errorMessage,
+      error: err,
+   })
+})
 
 // 서버 실행
 app.listen(app.get('PORT'), () => {
