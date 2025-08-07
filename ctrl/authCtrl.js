@@ -31,10 +31,10 @@ exports.register = async (req, res) => {
       // 유저 생성
       const user = await User.create({
          name,
+         nickname,
          email,
          address,
          password: hash,
-         nickname,
          age,
          role,
          phone_number,
@@ -89,7 +89,7 @@ exports.logout = async (req, res) => {
 exports.getMe = async (req, res) => {
    try {
       const user = await User.findByPk(req.user.id, {
-         attributes: ['id', 'email', 'nickname', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
+         attributes: ['id', 'email', 'name', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
       })
 
       if (!user) {
@@ -107,14 +107,14 @@ exports.getMe = async (req, res) => {
 exports.updateMe = async (req, res) => {
    try {
       const userId = req.user.id // middlewares에서 토큰 검증을 거쳐 붙은 값
-      const { nickname, address, phone_number, profile_img } = req.body
+      const { name, address, phone_number, profile_img } = req.body
 
       const user = await User.findByPk(userId)
       if (!user) {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      user.nickname = nickname || user.nickname
+      user.name = name || user.name
       user.address = address || user.address
       user.phone_number = phone_number || user.phone_number
       user.profile_img = profile_img || user.profile_img
@@ -126,7 +126,6 @@ exports.updateMe = async (req, res) => {
          user: {
             id: user.id,
             email: user.email,
-            nickname: user.nickname,
             address: user.address,
             phone_number: user.phone_number,
             profile_img: user.profile_img,
@@ -140,7 +139,16 @@ exports.updateMe = async (req, res) => {
 
 // 회원 탈퇴
 exports.deleteAccount = async (req, res) => {
-   res.status(200).json({ message: '회원 탈퇴 성공', user: req.user })
+   try {
+      const userId = req.user.id
+
+      await User.destroy({ where: { id: userId } })
+
+      res.status(200).json({ message: '회원 탈퇴 성공' })
+   } catch (error) {
+      console.error('회원 탈퇴 오류:', error)
+      res.status(500).json({ message: '서버 오류로 인해 회원 탈퇴에 실패했습니다.' })
+   }
 }
 
 // 자동 로그인
@@ -224,21 +232,6 @@ exports.resetPwByEmail = async (req, res) => {
    }
 }
 
-// 전화번호로 비밀번호 초기화 - 인증코드 전송
-exports.sendPhoneCode = (req, res) => {
-   res.send('전화번호로 인증 코드 전송')
-}
-
-// 전화번호 인증코드 검증
-exports.verifyPhoneCode = (req, res) => {
-   res.send('전화번호 인증 코드 검증')
-}
-
-// 인증성공 시 새 비밀번호 등록
-exports.findPwByPhone = (req, res) => {
-   res.send('전화번호 인증 성공 후 새 비밀번호 등록')
-}
-
 // 구글 소셜 로그인
 exports.googleLogin = (req, res) => {
    res.send('구글 로그인')
@@ -283,4 +276,65 @@ exports.deleteOrder = (req, res) => {
 
 exports.answerQna = (req, res) => {
    res.send('문의 답변')
+}
+
+// [추가] 전화번호로 사용자 찾기 컨트롤러
+exports.findUserByPhone = async (req, res) => {
+   try {
+      const { phone } = req.body
+      if (!phone) {
+         return res.status(400).json({ message: '전화번호를 입력해주세요.' })
+      }
+
+      const user = await User.findOne({ where: { phone_number: phone } })
+
+      if (!user) {
+         return res.status(404).json({ message: '해당 전화번호로 가입된 회원이 없습니다.' })
+      }
+
+      // 이메일 마스킹 (e.g., test@google.com -> t***@google.com)
+      const [localPart, domain] = user.email.split('@')
+      const maskedEmail = `${localPart[0]}${'*'.repeat(localPart.length - 1)}@${domain}`
+
+      res.status(200).json({ maskedEmail: maskedEmail })
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '서버 오류가 발생했습니다.' })
+   }
+}
+
+// [추가] 이메일 확인 후 비밀번호 재설정 메일 보내기 컨트롤러
+exports.sendResetEmail = async (req, res) => {
+   const t = await sequelize.transaction() // 트랜잭션 시작
+   try {
+      const { phone, email } = req.body
+
+      const user = await User.findOne({ where: { phone_number: phone } })
+
+      if (!user || user.email !== email) {
+         return res.status(400).json({ message: '사용자 정보가 일치하지 않습니다.' })
+      }
+
+      // 6자리 숫자 인증 코드 생성
+      const code = crypto.randomInt(100000, 999999).toString()
+      const expires_at = new Date(Date.now() + 10 * 60 * 1000) // 10분 후 만료
+
+      // DB에 인증 코드 저장 (SQL 직접 실행)
+      await sequelize.query('INSERT INTO password_resets (email, code, expires_at) VALUES (?, ?, ?)', {
+         replacements: [email, code, expires_at],
+         type: sequelize.QueryTypes.INSERT,
+         transaction: t,
+      })
+
+      // 이메일 발송
+      await mailer.sendPasswordResetCode(email, code)
+
+      await t.commit() // 모든 작업이 성공하면 커밋
+
+      res.status(200).json({ message: `[${email}] 주소로 인증 코드를 보냈습니다.` })
+   } catch (error) {
+      await t.rollback() // 오류 발생 시 롤백
+      console.error(error)
+      res.status(500).json({ message: '이메일 발송 중 오류가 발생했습니다.' })
+   }
 }
