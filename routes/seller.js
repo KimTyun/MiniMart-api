@@ -7,7 +7,7 @@ const sellerCtrl = require('../ctrl/sellerCtrl')
 // 판매자 자격 신청
 /**
  * @swagger
- * /users/me/seller-application:
+ * /mypage/requestseller:
  *   post:
  *     summary: 판매자 자격 신청
  *     tags: [User, Seller]
@@ -36,7 +36,7 @@ const sellerCtrl = require('../ctrl/sellerCtrl')
  *       500:
  *         description: 서버 에러
  */
-router.post('/users/me/seller-application', isLoggedIn, sellerCtrl.applySeller)
+router.post('/mypage/requestseller', isLoggedIn, sellerCtrl.applySeller)
 
 // 내 정보 조회 (판매자 정보 포함)
 /**

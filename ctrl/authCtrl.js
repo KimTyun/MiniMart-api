@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 
-const { User } = require('../models')
+const { User, Order, Follow } = require('../models')
 const { sendMail } = require('../routes/utils/mailer') // 컨픽에서 메일 전송 함수 호출
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
@@ -31,10 +31,10 @@ exports.register = async (req, res) => {
       // 유저 생성
       const user = await User.create({
          name,
+         nickname,
          email,
          address,
          password: hash,
-         nickname,
          age,
          role,
          phone_number,
@@ -85,18 +85,67 @@ exports.logout = async (req, res) => {
    }
 }
 
-// 내 정보 조회
 exports.getMe = async (req, res) => {
    try {
+      // 1. 유저 정보
       const user = await User.findByPk(req.user.id, {
-         attributes: ['id', 'email', 'nickname', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
+         attributes: ['id', 'email', 'name', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
       })
 
       if (!user) {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      res.json({ user })
+      // 2. 주문 내역 (Order + Product 조인)
+      const orders = await Order.findAll({
+         where: { user_id: req.user.id },
+         include: [
+            {
+               model: Product,
+               attributes: ['name', 'image_url'],
+            },
+         ],
+         order: [['createdAt', 'DESC']],
+      })
+
+      const formattedOrders = orders.map((order) => ({
+         order_id: order.id,
+         product_name: order.Product.name,
+         product_image: order.Product.image_url,
+         order_date: order.createdAt.toISOString().split('T')[0],
+         status: order.status,
+      }))
+
+      // 3. 팔로잉한 판매자 목록 (Follow + User 조인)
+      const follows = await Follow.findAll({
+         where: { follower_id: req.user.id },
+         include: [
+            {
+               model: User,
+               as: 'Following',
+               attributes: ['id', 'name', 'profile_img'],
+            },
+         ],
+      })
+
+      const formattedFollowings = follows.map((f) => ({
+         seller_id: f.Following.id,
+         seller_name: f.Following.name,
+         seller_profile_img: f.Following.profile_img,
+      }))
+
+      // 4. 응답
+      res.status(200).json({
+         success: true,
+         data: {
+            user: {
+               ...user.toJSON(),
+               createdAt: user.createdAt.toISOString().split('T')[0],
+            },
+            orders: formattedOrders,
+            followings: formattedFollowings,
+         },
+      })
    } catch (error) {
       console.error(error)
       res.status(500).json({ message: '서버 에러' })
@@ -107,14 +156,14 @@ exports.getMe = async (req, res) => {
 exports.updateMe = async (req, res) => {
    try {
       const userId = req.user.id // middlewares에서 토큰 검증을 거쳐 붙은 값
-      const { nickname, address, phone_number, profile_img } = req.body
+      const { name, address, phone_number, profile_img } = req.body
 
       const user = await User.findByPk(userId)
       if (!user) {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      user.nickname = nickname || user.nickname
+      user.name = name || user.name
       user.address = address || user.address
       user.phone_number = phone_number || user.phone_number
       user.profile_img = profile_img || user.profile_img
@@ -126,7 +175,6 @@ exports.updateMe = async (req, res) => {
          user: {
             id: user.id,
             email: user.email,
-            nickname: user.nickname,
             address: user.address,
             phone_number: user.phone_number,
             profile_img: user.profile_img,
@@ -140,7 +188,30 @@ exports.updateMe = async (req, res) => {
 
 // 회원 탈퇴
 exports.deleteAccount = async (req, res) => {
-   res.status(200).json({ message: '회원 탈퇴 성공', user: req.user })
+   try {
+      const userId = req.user.id
+
+      // 1. 사용자 DB에서 삭제
+      await User.destroy({ where: { id: userId } })
+
+      // 2. 세션이 있을 경우 세션 삭제
+      if (req.session) {
+         req.session.destroy((err) => {
+            if (err) {
+               console.error('세션 삭제 실패:', err)
+               return res.status(500).json({ message: '회원 탈퇴는 되었지만, 세션 삭제에 실패했습니다.' })
+            }
+         })
+      }
+
+      // 3. 클라이언트 쿠키 삭제
+      res.clearCookie('connect.sid')
+
+      res.status(200).json({ message: '회원 탈퇴 성공' })
+   } catch (error) {
+      console.error('회원 탈퇴 오류:', error)
+      res.status(500).json({ message: '서버 오류로 인해 회원 탈퇴에 실패했습니다.' })
+   }
 }
 
 // 자동 로그인
@@ -224,63 +295,73 @@ exports.resetPwByEmail = async (req, res) => {
    }
 }
 
-// 전화번호로 비밀번호 초기화 - 인증코드 전송
-exports.sendPhoneCode = (req, res) => {
-   res.send('전화번호로 인증 코드 전송')
-}
-
-// 전화번호 인증코드 검증
-exports.verifyPhoneCode = (req, res) => {
-   res.send('전화번호 인증 코드 검증')
-}
-
-// 인증성공 시 새 비밀번호 등록
-exports.findPwByPhone = (req, res) => {
-   res.send('전화번호 인증 성공 후 새 비밀번호 등록')
-}
-
 // 구글 소셜 로그인
 exports.googleLogin = (req, res) => {
    res.send('구글 로그인')
 }
 
-// 카카오 소셜 로그인
-exports.kakaoLogin = (req, res) => {
-   res.send('카카오 로그인')
-}
-
+// 판매자 자격 신청
 exports.getSeller = (req, res) => {
    res.send('판매자 자격 신청')
 }
 
-exports.approveSeller = (req, res) => {
-   res.send('판매자 자격 승인')
+// [추가] 전화번호로 사용자 찾기 컨트롤러
+exports.findUserByPhone = async (req, res) => {
+   try {
+      const { phone } = req.body
+      if (!phone) {
+         return res.status(400).json({ message: '전화번호를 입력해주세요.' })
+      }
+
+      const user = await User.findOne({ where: { phone_number: phone } })
+
+      if (!user) {
+         return res.status(404).json({ message: '해당 전화번호로 가입된 회원이 없습니다.' })
+      }
+
+      // 이메일 마스킹 (e.g., test@google.com -> t***@google.com)
+      const [localPart, domain] = user.email.split('@')
+      const maskedEmail = `${localPart[0]}${'*'.repeat(localPart.length - 1)}@${domain}`
+
+      res.status(200).json({ maskedEmail: maskedEmail })
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '서버 오류가 발생했습니다.' })
+   }
 }
 
-exports.getAllUsers = (req, res) => {
-   res.send('사용자 전체 목록')
-}
+// [추가] 이메일 확인 후 비밀번호 재설정 메일 보내기 컨트롤러
+exports.sendResetEmail = async (req, res) => {
+   const t = await sequelize.transaction() // 트랜잭션 시작
+   try {
+      const { phone, email } = req.body
 
-exports.editUserInfo = (req, res) => {
-   res.send('사용자 정보 수정')
-}
+      const user = await User.findOne({ where: { phone_number: phone } })
 
-exports.deleteUser = (req, res) => {
-   res.send('사용자 삭제')
-}
+      if (!user || user.email !== email) {
+         return res.status(400).json({ message: '사용자 정보가 일치하지 않습니다.' })
+      }
 
-exports.getAllOrders = (req, res) => {
-   res.send('주문 전체 목록')
-}
+      // 6자리 숫자 인증 코드 생성
+      const code = crypto.randomInt(100000, 999999).toString()
+      const expires_at = new Date(Date.now() + 10 * 60 * 1000) // 10분 후 만료
 
-exports.editOrderInfo = (req, res) => {
-   res.send('주문 수정(관리자)')
-}
+      // DB에 인증 코드 저장 (SQL 직접 실행)
+      await sequelize.query('INSERT INTO password_resets (email, code, expires_at) VALUES (?, ?, ?)', {
+         replacements: [email, code, expires_at],
+         type: sequelize.QueryTypes.INSERT,
+         transaction: t,
+      })
 
-exports.deleteOrder = (req, res) => {
-   res.send('주문 삭제(관리자)')
-}
+      // 이메일 발송
+      await mailer.sendPasswordResetCode(email, code)
 
-exports.answerQna = (req, res) => {
-   res.send('문의 답변')
+      await t.commit() // 모든 작업이 성공하면 커밋
+
+      res.status(200).json({ message: `[${email}] 주소로 인증 코드를 보냈습니다.` })
+   } catch (error) {
+      await t.rollback() // 오류 발생 시 롤백
+      console.error(error)
+      res.status(500).json({ message: '이메일 발송 중 오류가 발생했습니다.' })
+   }
 }

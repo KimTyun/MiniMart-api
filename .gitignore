@@ -1,5 +1,4 @@
 .env
-/uploads/*
-!/uploads/item/
+/uploads/**
 !/uploads/**/*.txt
 node_modules
