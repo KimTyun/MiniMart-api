@@ -127,7 +127,7 @@ router.get('/status', async (req, res, next) => {
  *       500:
  *         description: 서버 에러
  */
-router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
+router.get('/autoLogin', isLoggedIn)
 
 // 로그인된 사용자 정보 가져오기
 router.get('/me', isLoggedIn, async (req, res) => {

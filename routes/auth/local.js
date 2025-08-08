@@ -1,12 +1,11 @@
 const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
 
 const express = require('express')
-
 const authCtrl = require('../../ctrl/authCtrl')
 require('dotenv').config()
 const router = express.Router()
 
-// local.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능, 내 정보 관련 기능을 담당합니다.
+// local.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능을 담당합니다.
 
 // 회원가입
 /**
@@ -144,138 +143,7 @@ router.post('/logout', authCtrl.logout)
  *       500:
  *         description: 서버 에러
  */
-router.get('/autoLogin', isLoggedIn, authCtrl.autoLogin)
-
-// 내 정보 조회
-/**
- * @swagger
- * /mypage:
- *   get:
- *     summary: 내 정보 + 주문 내역 + 팔로우한 판매자 목록 조회
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 내 정보 전체 조회 성공
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                   example: true
- *                 data:
- *                   type: object
- *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: integer
- *                         email:
- *                           type: string
- *                         name:
- *                           type: string
- *                         address:
- *                           type: string
- *                         phone_number:
- *                           type: string
- *                         profile_img:
- *                           type: string
- *                         provider:
- *                           type: string
- *                         role:
- *                           type: string
- *                         createdAt:
- *                           type: string
- *                           format: date-time
- *                     orders:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           order_id:
- *                             type: integer
- *                           product_name:
- *                             type: string
- *                           product_image:
- *                             type: string
- *                           order_date:
- *                             type: string
- *                             format: date
- *                           status:
- *                             type: string
- *                             example: "배송완료"
- *                     followings:
- *                       type: array
- *                       items:
- *                         type: object
- *                         properties:
- *                           seller_id:
- *                             type: integer
- *                           seller_name:
- *                             type: string
- *                           seller_profile_img:
- *                             type: string
- *       401:
- *         description: 인증이 필요합니다
- *       500:
- *         description: 서버 에러
- */
-router.get('/mypage', isLoggedIn, authCtrl.getMe)
-
-// 내 정보 수정
-/**
- * @swagger
- * /mypage/edit:
- *   patch:
- *     summary: 내 정보 수정
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *               address:
- *                 type: string
- *               password:
- *                 type: string
- *     responses:
- *       200:
- *         description: 내 정보 수정 성공
- *       401:
- *         description: 로그인이 필요합니다
- *       500:
- *         description: 서버 에러
- */
-router.patch('/mypage/edit', isLoggedIn, authCtrl.updateMe)
-
-// 회원 탈퇴
-/**
- * @swagger
- * /mypage/delete:
- *   delete:
- *     summary: 회원 탈퇴
- *     tags: [User]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: 회원 탈퇴 성공
- *       401:
- *         description: 로그인이 필요합니다
- *       500:
- *         description: 서버 에러
- */
-router.delete('/mypage/delete', isLoggedIn, authCtrl.deleteAccount)
+router.get('/autoLogin', isLoggedIn)
 
 // 이메일 비번 찾기 - 인증코드 전송
 /**
