@@ -1,4 +1,4 @@
-const { isLoggedIn, isAdmin } = require('../middlewares')
+const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
 
 const express = require('express')
 

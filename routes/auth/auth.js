@@ -1,6 +1,6 @@
 const express = require('express')
 
-const { isLoggedIn, isAdmin } = require('../middlewares')
+const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
 const authCtrl = require('../../ctrl/authCtrl')
 
 const User = require('../../models/user')
