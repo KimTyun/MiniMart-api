@@ -20,7 +20,7 @@ module.exports = class ItemOption extends Sequelize.Model {
          },
          {
             sequelize,
-            timestamps: false,
+            timestamps: true,
             underscored: false,
             modelName: 'ItemOption',
             tableName: 'item_option',
