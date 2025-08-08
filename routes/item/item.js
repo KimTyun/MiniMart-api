@@ -8,6 +8,7 @@ const fs = require('fs')
 const multer = require('multer')
 const path = require('path')
 
+//upload/item 폴더가 없을 경우 생성
 try {
    fs.readdirSync('uploads/item') //해당 폴더가 있는지 확인
 } catch (error) {
@@ -15,6 +16,7 @@ try {
    fs.mkdirSync('uploads/item') //폴더 생성
 }
 
+// multer 설정
 const upload = multer({
    storage: multer.diskStorage({
       destination(req, file, cb) {
@@ -242,15 +244,77 @@ router.put('/:itemId', authorize(ROLE.SELLER), upload.array('img'), async (req, 
 })
 
 //상품 삭제
-router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), (req, res, next) => {
-   console.log('상품삭제 api 요청 잘 왔음.')
-   res.send('상품삭제 api 요청 잘 왔음.')
+router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), async (req, res, next) => {
+   const transaction = await sequelize.transaction()
+   try {
+      const { itemId } = req.params
+      const item = await Item.findByPk(itemId)
+      if (!item) {
+         const error = new Error('상품정보를 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+      await Item.destroy({ where: { id: itemId }, transaction })
+      await ItemOption.destroy({ where: { item_id: itemId }, transaction })
+
+      const itemImg = await ItemImg.findAll({ where: { item_id: itemId } })
+      await ItemImg.destroy({ where: { item_id: itemId }, transaction })
+
+      if (itemImg) {
+         itemImg.map((img) => {
+            const filePath = path.join(__dirname, '../..', img.img_url)
+            if (fs.existsSync(filePath)) {
+               fs.unlinkSync(filePath)
+            }
+         })
+      }
+      await sequelize.models.item_hashtag.destroy({
+         where: { item_id: itemId },
+         transaction,
+      })
+      await transaction.commit()
+
+      res.json({
+         success: true,
+         message: '성공적으로 상품을 삭제했습니다.',
+         itemImg,
+      })
+   } catch (error) {
+      await transaction.rollback()
+      error.status = error.status || 500
+      error.message = error.message || '상품을 삭제하는 중 오류 발생'
+      next(error)
+   }
 })
 
 // 단일상품 조회(상품 상제정보)
-router.get('/:itemId', authorize(ROLE.ALL), (req, res, next) => {
-   console.log('단일상품조회 api 요청 잘 왔음.')
-   res.send('단일상품조회 api 요청 잘 왔음.')
+router.get('/:itemId', authorize(ROLE.ALL), async (req, res, next) => {
+   try {
+      const { itemId } = req.params
+      const item = await Item.findByPk(itemId, {
+         include: [
+            {
+               model: Hashtag,
+               through: { attributes: [] },
+            },
+            {
+               model: ItemImg,
+            },
+            {
+               model: ItemOption,
+            },
+         ],
+      })
+      res.json({
+         item,
+         success: true,
+         message: '성공적으로 상품 정보를 불러왔습니다.',
+      })
+   } catch (error) {
+      error.status = error.status || 500
+      error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
+   }
 })
 
 module.exports = router
