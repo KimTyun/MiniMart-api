@@ -137,7 +137,6 @@ router.get('/me', isLoggedIn, async (req, res) => {
          attributes: ['id', 'name', 'email', 'address', 'phone_number', 'profile_img', 'role', 'age', 'provider'],
       })
       if (!user) {
-         console.log('req.user:', req.user)
          return res.status(404).json({ success: false, message: '사용자를 찾을 수 없습니다.' })
       }
       res.json(user)
