@@ -86,17 +86,6 @@ exports.login = (req, res, next) => {
    })(req, res, next)
 }
 
-// 로그아웃
-exports.logout = async (req, res, next) => {
-   try {
-      req.session.destroy()
-      return res.status(200).json({ message: '성공적으로 로그아웃되었습니다.' })
-   } catch (err) {
-      console.error(error)
-      next(error)
-   }
-}
-
 // 이메일로 비밀번호 초기화 - 인증코드 전송
 exports.sendEmailCode = async (req, res) => {
    const { email } = req.body

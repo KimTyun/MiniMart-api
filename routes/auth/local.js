@@ -109,7 +109,20 @@ router.post('/login', authCtrl.login)
  *       500:
  *         description: 서버 에러
  */
-router.post('/logout', isLoggedIn, authCtrl.logout)
+router.post('/logout', isLoggedIn, async (req, res, next) => {
+   req.logout((logoutError) => {
+      if (logoutError) {
+         // 로그아웃 상태로 바꾸는 중 에러 발생시
+         logoutError.status = 500
+         logoutError.message = '로그아웃 중 오류 발생'
+         return next(logoutError)
+      }
+      res.json({
+         success: true,
+         message: '로그아웃에 성공했습니다.',
+      })
+   })
+})
 
 // 자동 로그인 (JWT로 로그인 상태 확인)
 /**
