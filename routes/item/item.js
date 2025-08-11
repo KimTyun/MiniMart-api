@@ -2,7 +2,8 @@ const express = require('express')
 const router = express.Router()
 const { authorize } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
-const { Item, ItemOption, ItemImg, Hashtag, Seller } = require('../../models')
+const { Item, ItemOption, ItemImg, Hashtag, Seller, Order, OrderItem, User } = require('../../models')
+const { Op } = require('sequelize')
 const { sequelize } = require('../../models')
 const fs = require('fs')
 const multer = require('multer')
@@ -172,6 +173,91 @@ router.get('/recent', async (req, res, next) => {
       console.error('GET /item/recent error =>', error)
       error.status = error.status || 500
       error.message = error.message || '최근 상품을 불러오는중 오류 발생'
+      next(error)
+   }
+})
+
+// 인기 상품 조회(20대, 30대)
+router.get('/popular/age', async (req, res, next) => {
+   try {
+      const topByAge = async (minAge, maxAge, tag) => {
+         const rows = await Item.findAll({
+            attributes: ['id', 'name'], // Item 기준
+            include: [
+               { model: Seller, attributes: ['id', 'name'] },
+               {
+                  model: ItemImg,
+                  attributes: ['id', 'img_url'],
+                  where: { rep_img_yn: true },
+                  required: false, // 대표 이미지 없을 수도
+               },
+               {
+                  model: ItemOption,
+                  attributes: [],
+                  required: true,
+                  include: [
+                     {
+                        model: OrderItem,
+                        attributes: [],
+                        required: true,
+                        include: [
+                           {
+                              model: Order,
+                              attributes: [],
+                              required: true,
+                              include: [
+                                 {
+                                    model: User,
+                                    attributes: [],
+                                    required: true,
+                                    where: { age: { [Op.between]: [minAge, maxAge] } },
+                                 },
+                              ],
+                           },
+                        ],
+                     },
+                  ],
+               },
+            ],
+            // ONLY_FULL_GROUP_BY 대응: SELECT에 나오는 애들 전부 GROUP BY
+            group: ['Item.id', 'Item.name', 'Seller.id', 'Seller.name', 'ItemImgs.id', 'ItemImgs.img_url'],
+            // col()/fn() 안 쓰고 literal로 합계 정렬
+            order: [
+               [sequelize.literal('SUM(`ItemOptions->OrderItem`.`count`)'), 'DESC'], // ← 단수
+               [sequelize.literal('`Item`.`id`'), 'ASC'],
+            ],
+
+            limit: 1,
+            subQuery: false,
+            raw: false,
+         })
+
+         if (!rows || rows.length === 0) return null
+
+         const it = rows[0]
+         return {
+            age_group: tag,
+            item_name: it.name ?? null,
+            seller_name: it.Seller?.name ?? null,
+            rep_img_url: it.ItemImgs?.[0]?.img_url ?? null,
+         }
+      }
+
+      const result20s = await topByAge(20, 29, '20s')
+      const result30s = await topByAge(30, 39, '30s')
+
+      const items = [result20s, result30s].filter(Boolean)
+
+      res.json({
+         success: true,
+         message: '연령대별 인기 상품 불러오기 성공',
+         count: items.length,
+         items, // [{ age_group, item_name, seller_name, rep_img_url }]
+      })
+   } catch (error) {
+      console.error('GET /item/popular/by-age error =>', error)
+      error.status = error.status || 500
+      error.message = error.message || '연령대별 인기 상품을 불러오는 중 오류 발생'
       next(error)
    }
 })
