@@ -4,6 +4,7 @@ const express = require('express')
 const authCtrl = require('../../ctrl/authCtrl')
 require('dotenv').config()
 const router = express.Router()
+const passport = require('passport')
 
 // local.js에선 회원가입과 로그인 및 사이트에 회원으로 접속하기 위한 기능을 담당합니다.
 
@@ -108,7 +109,7 @@ router.post('/login', authCtrl.login)
  *       500:
  *         description: 서버 에러
  */
-router.post('/logout', authCtrl.logout)
+router.post('/logout', isLoggedIn, authCtrl.logout)
 
 // 자동 로그인 (JWT로 로그인 상태 확인)
 /**
