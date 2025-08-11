@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const crypto = require('crypto')
 const nodemailer = require('nodemailer')
+const passport = require('passport')
 
 const { User } = require('../models')
 const { sendMail } = require('../routes/utils/mailer') // 컨픽에서 메일 전송 함수 호출
@@ -47,40 +48,52 @@ exports.register = async (req, res) => {
 }
 
 // 로그인
-exports.login = async (req, res) => {
-   try {
-      const { email, password } = req.body
+exports.login = (req, res, next) => {
+   passport.authenticate('local', (authError, user, info) => {
+      if (authError) {
+         console.error(authError)
+         const error = new Error('인증 처리 중 서버 오류가 발생했습니다.')
+         error.status = 500
+         return next(error) // 에러 처리 미들웨어로 전달
+      }
 
-      // 사용자 찾기
-      const user = await User.findOne({ where: { email } })
       if (!user) {
-         return res.status(400).json({ message: '이메일 또는 비밀번호가 틀렸습니다.' })
+         const error = new Error(info.message || '이메일 또는 비밀번호가 올바르지 않습니다.')
+         error.status = 401 // Unauthorized
+         return next(error)
       }
 
-      // 비밀번호 비교
-      const match = await bcrypt.compare(password, user.password)
-      if (!match) {
-         return res.status(400).json({ message: '이메일 또는 비밀번호가 틀렸습니다.' })
-      }
+      req.login(user, (loginError) => {
+         // req.login 과정에서 오류가 발생한 경우
+         if (loginError) {
+            console.error(loginError)
+            const error = new Error('로그인 처리 중 서버 오류가 발생했습니다.')
+            error.status = 500
+            return next(error)
+         }
 
-      // JWT 발급
-      const token = jwt.sign({ id: user.id, email: user.email }, SECRET, { expiresIn: '365d' })
-
-      return res.json({ message: '로그인 성공', token })
-   } catch (err) {
-      console.error(err)
-      res.status(500).json({ message: '서버 에러' })
-   }
+         return res.status(200).json({
+            success: true,
+            message: '로그인 성공',
+            user: {
+               id: user.id,
+               email: user.email,
+               name: user.name,
+               role: user.role,
+            },
+         })
+      })
+   })(req, res, next)
 }
 
 // 로그아웃
-exports.logout = async (req, res) => {
+exports.logout = async (req, res, next) => {
    try {
-      // 로그아웃은 프론트에서 토큰 삭제로 처리하므로, 백엔드는 그냥 메시지만 전달
-      res.status(200).json({ message: '로그아웃 되었습니다.' })
+      req.session.destroy()
+      return res.status(200).json({ message: '성공적으로 로그아웃되었습니다.' })
    } catch (err) {
-      console.error(err)
-      res.status(500).json({ message: '서버 에러' })
+      console.error(error)
+      next(error)
    }
 }
 

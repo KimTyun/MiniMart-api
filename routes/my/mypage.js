@@ -1,4 +1,4 @@
-const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
+const { isLoggedIn } = require('../../middlewares/middlewares')
 
 const express = require('express')
 const authCtrl = require('../../ctrl/authCtrl')
@@ -183,7 +183,7 @@ router.get('/mypage', isLoggedIn, async (req, res) => {
  *       500:
  *         description: 서버 에러
  */
-router.get('/', isLoggedIn, async (req, res) => {
+router.get('/mypage/edit', isLoggedIn, async (req, res) => {
    try {
       const user = await User.findByPk(req.user.id, {
          attributes: ['id', 'name', 'email', 'address', 'phone_number', 'profile_img', 'role', 'createdAt'],
@@ -201,40 +201,40 @@ router.get('/', isLoggedIn, async (req, res) => {
 })
 
 // 내 정보 수정
-router.patch('/edit', isLoggedIn, async (req, res) => {
-   try {
-      const userId = req.user.id // middlewares에서 토큰 검증 후 붙은 값
-      const { name, address, phone_number, profile_img } = req.body
+// router.patch('/edit', isLoggedIn, async (req, res) => {
+//    try {
+//       const userId = req.user.id // middlewares에서 토큰 검증 후 붙은 값
+//       const { name, address, phone_number, profile_img } = req.body
 
-      const user = await User.findByPk(userId)
-      if (!user) {
-         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
-      }
+//       const user = await User.findByPk(userId)
+//       if (!user) {
+//          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
+//       }
 
-      // 전달된 값만 업데이트
-      if (name !== undefined) user.name = name
-      if (address !== undefined) user.address = address
-      if (phone_number !== undefined) user.phone_number = phone_number
-      if (profile_img !== undefined) user.profile_img = profile_img
+//       // 전달된 값만 업데이트
+//       if (name !== undefined) user.name = name
+//       if (address !== undefined) user.address = address
+//       if (phone_number !== undefined) user.phone_number = phone_number
+//       if (profile_img !== undefined) user.profile_img = profile_img
 
-      await user.save()
+//       await user.save()
 
-      res.status(200).json({
-         message: '회원 정보가 수정되었습니다.',
-         user: {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            address: user.address,
-            phone_number: user.phone_number,
-            profile_img: user.profile_img,
-         },
-      })
-   } catch (error) {
-      console.error(error)
-      res.status(500).json({ message: '서버 에러' })
-   }
-})
+//       res.status(200).json({
+//          message: '회원 정보가 수정되었습니다.',
+//          user: {
+//             id: user.id,
+//             name: user.name,
+//             email: user.email,
+//             address: user.address,
+//             phone_number: user.phone_number,
+//             profile_img: user.profile_img,
+//          },
+//       })
+//    } catch (error) {
+//       console.error(error)
+//       res.status(500).json({ message: '서버 에러' })
+//    }
+// })
 
 // 회원 탈퇴
 /**
@@ -288,6 +288,30 @@ router.delete('/mypage/delete', isLoggedIn, async (req, res) => {
    } catch (error) {
       console.error('회원 탈퇴 오류:', error)
       return res.status(500).json({ message: '서버 오류로 인해 회원 탈퇴에 실패했습니다.' })
+   }
+})
+
+// 판매자를 언팔로우
+router.delete('/mypage/followings/:sellerId', isLoggedIn, async (req, res) => {
+   try {
+      const userId = req.user.id
+      const sellerId = req.params.sellerId
+
+      const deleted = await Follow.destroy({
+         where: {
+            follower_id: userId,
+            following_id: sellerId,
+         },
+      })
+
+      if (!deleted) {
+         return res.status(404).json({ message: '팔로잉 관계를 찾을 수 없습니다.' })
+      }
+
+      res.status(200).json({ message: '팔로잉 취소 성공' })
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '서버 오류' })
    }
 })
 
