@@ -49,11 +49,5 @@ module.exports = class Order extends Sequelize.Model {
          foreignKey: 'order_id',
          sourceKey: 'id',
       })
-      Order.belongsToMany(db.Item, {
-         through: 'order_item',
-         foreignKey: 'order_id',
-         otherKey: 'item_id',
-         onDelete: 'CASCADE',
-      })
    }
 }
