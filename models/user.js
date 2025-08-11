@@ -30,7 +30,7 @@ module.exports = class User extends Sequelize.Model {
                allowNull: true,
             },
             profile_img: {
-               type: DataTypes.STRING(255),
+               type: DataTypes.STRING(1000),
                allowNull: true,
             },
             provider: {
