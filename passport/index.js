@@ -15,6 +15,7 @@ module.exports = () => {
 
    passport.deserializeUser(async (id, done) => {
       try {
+         console.log('로그인 확인')
          const user = await User.findByPk(id)
          done(null, user) // req.user로 들어감
       } catch (error) {
