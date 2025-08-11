@@ -33,5 +33,9 @@ module.exports = class OrderItem extends Sequelize.Model {
          targetKey: 'id',
          onDelete: 'CASCADE',
       })
+      OrderItem.belongsTo(db.ItemOption, {
+         foreignKey: 'item_option_id',
+         targetKey: 'id',
+      })
    }
 }

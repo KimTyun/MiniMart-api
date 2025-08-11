@@ -36,5 +36,9 @@ module.exports = class ItemOption extends Sequelize.Model {
          foreignKey: 'item_id',
          targetKey: 'id',
       })
+      ItemOption.hasOne(db.OrderItem, {
+         foreignKey: 'item_option_id',
+         sourceKey: 'id',
+      })
    }
 }
