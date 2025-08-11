@@ -16,6 +16,7 @@ const fs = require('fs')
 
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
+const mypageRouter = require('./routes/my/mypage')
 
 const app = express()
 passportConfig()
@@ -67,8 +68,6 @@ app.use(
    passport.session()
 )
 
-app.use('/auth', authRouter)
-
 app.get('/', (req, res) => {
    res.send(`
       <h1>서버 정상 작동중.</h1>
@@ -80,6 +79,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 // 라우터 연결
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
+app.use('/mypage', mypageRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
