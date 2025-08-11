@@ -4,7 +4,7 @@ const express = require('express')
 const authCtrl = require('../../ctrl/authCtrl')
 require('dotenv').config()
 const router = express.Router()
-const { User, Order, Follow } = require('../../models')
+const { User, Order, Follow, Item, ItemImg, Seller } = require('../../models')
 
 // mypage.js는 내 정보 페이지의 구매내역 및 팔로우 한 판매자 표시, 내 정보 수정, 회원 탈퇴 등을 담당합니다.
 
@@ -60,9 +60,9 @@ const { User, Order, Follow } = require('../../models')
  *                         properties:
  *                           order_id:
  *                             type: integer
- *                           product_name:
+ *                           item_name:
  *                             type: string
- *                           product_image:
+ *                           item_image:
  *                             type: string
  *                           order_date:
  *                             type: string
@@ -86,70 +86,51 @@ const { User, Order, Follow } = require('../../models')
  *       500:
  *         description: 서버 에러
  */
-router.get('/mypage', isLoggedIn, async (req, res) => {
+router.get('/', isLoggedIn, async (req, res, next) => {
    try {
-      // 1. 유저 정보
-      const user = await User.findByPk(req.user.id, {
-         attributes: ['id', 'email', 'name', 'address', 'phone_number', 'profile_img', 'provider', 'role', 'createdAt'],
+      const userId = req.user.id
+
+      // 유저 정보 조회 (필요한 필드만 선택)
+      const user = await User.findByPk(userId, {
+         attributes: ['id', 'name', 'email', 'phone_number', 'address', 'profile_img', 'role'],
       })
 
-      if (!user) {
-         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
-      }
-
-      // 2. 주문 내역 (Order + Product 조인)
+      // 구매 내역 조회 (orders + items 조인)
       const orders = await Order.findAll({
-         where: { user_id: req.user.id },
+         where: { buyer_id: userId },
          include: [
             {
-               model: Product,
-               attributes: ['name', 'image_url'],
+               model: Item,
+               attributes: ['id', 'name'],
+               include: [
+                  {
+                     model: ItemImg,
+                     attributes: ['url'],
+                     limit: 1,
+                  },
+               ],
             },
          ],
          order: [['createdAt', 'DESC']],
       })
 
-      const formattedOrders = orders.map((order) => ({
-         order_id: order.id,
-         product_name: order.Product.name,
-         product_image: order.Product.image_url,
-         order_date: order.createdAt.toISOString().split('T')[0],
-         status: order.status,
-      }))
-
-      // 3. 팔로잉한 판매자 목록 (Follow + User 조인)
-      const follows = await Follow.findAll({
-         where: { follower_id: req.user.id },
-         include: [
-            {
-               model: User,
-               as: 'Following',
-               attributes: ['id', 'name', 'profile_img'],
-            },
-         ],
+      // 팔로잉 목록 조회
+      const followings = await Follow.findAll({
+         where: { buyer_id: userId }, // buyer_id 사용
+         include: [{ model: Seller, as: 'Seller', attributes: ['id', 'name'] }],
       })
 
-      const formattedFollowings = follows.map((f) => ({
-         seller_id: f.Following.id,
-         seller_name: f.Following.name,
-         seller_profile_img: f.Following.profile_img,
-      }))
-
-      // 4. 응답
-      res.status(200).json({
-         success: true,
-         data: {
-            user: {
-               ...user.toJSON(),
-               createdAt: user.createdAt.toISOString().split('T')[0],
-            },
-            orders: formattedOrders,
-            followings: formattedFollowings,
-         },
+      res.json({
+         user,
+         orders,
+         followings: followings.map((f) => ({
+            seller_id: f.Seller.id,
+            seller_name: f.Seller.name,
+            seller_profile_img: f.Seller.profile_img,
+         })),
       })
    } catch (error) {
-      console.error(error)
-      res.status(500).json({ message: '서버 에러' })
+      next(error)
    }
 })
 
@@ -183,58 +164,21 @@ router.get('/mypage', isLoggedIn, async (req, res) => {
  *       500:
  *         description: 서버 에러
  */
-router.get('/mypage/edit', isLoggedIn, async (req, res) => {
+router.put('/edit', isLoggedIn, async (req, res, next) => {
    try {
-      const user = await User.findByPk(req.user.id, {
-         attributes: ['id', 'name', 'email', 'address', 'phone_number', 'profile_img', 'role', 'createdAt'],
-      })
+      const userId = req.user.id
+      const { name, phone_number, address } = req.body
 
-      if (!user) {
-         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
-      }
+      const user = await User.findByPk(userId)
+      if (!user) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' })
 
-      res.status(200).json({ user })
+      await user.update({ name, phone_number, address })
+
+      res.json({ user })
    } catch (error) {
-      console.error(error)
-      res.status(500).json({ message: '서버 에러' })
+      next(error)
    }
 })
-
-// 내 정보 수정
-// router.patch('/edit', isLoggedIn, async (req, res) => {
-//    try {
-//       const userId = req.user.id // middlewares에서 토큰 검증 후 붙은 값
-//       const { name, address, phone_number, profile_img } = req.body
-
-//       const user = await User.findByPk(userId)
-//       if (!user) {
-//          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
-//       }
-
-//       // 전달된 값만 업데이트
-//       if (name !== undefined) user.name = name
-//       if (address !== undefined) user.address = address
-//       if (phone_number !== undefined) user.phone_number = phone_number
-//       if (profile_img !== undefined) user.profile_img = profile_img
-
-//       await user.save()
-
-//       res.status(200).json({
-//          message: '회원 정보가 수정되었습니다.',
-//          user: {
-//             id: user.id,
-//             name: user.name,
-//             email: user.email,
-//             address: user.address,
-//             phone_number: user.phone_number,
-//             profile_img: user.profile_img,
-//          },
-//       })
-//    } catch (error) {
-//       console.error(error)
-//       res.status(500).json({ message: '서버 에러' })
-//    }
-// })
 
 // 회원 탈퇴
 /**
@@ -253,7 +197,7 @@ router.get('/mypage/edit', isLoggedIn, async (req, res) => {
  *       500:
  *         description: 서버 에러
  */
-router.delete('/mypage/delete', isLoggedIn, async (req, res) => {
+router.delete('/delete', isLoggedIn, async (req, res) => {
    try {
       const userId = req.user.id
 
@@ -292,26 +236,16 @@ router.delete('/mypage/delete', isLoggedIn, async (req, res) => {
 })
 
 // 판매자를 언팔로우
-router.delete('/mypage/followings/:sellerId', isLoggedIn, async (req, res) => {
+router.post('/unfollow/:sellerId', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
       const sellerId = req.params.sellerId
 
-      const deleted = await Follow.destroy({
-         where: {
-            follower_id: userId,
-            following_id: sellerId,
-         },
-      })
+      await Follow.destroy({ where: { buyer_id: userId, seller_id: sellerId } })
 
-      if (!deleted) {
-         return res.status(404).json({ message: '팔로잉 관계를 찾을 수 없습니다.' })
-      }
-
-      res.status(200).json({ message: '팔로잉 취소 성공' })
+      res.json({ message: '언팔로우 되었습니다.' })
    } catch (error) {
-      console.error(error)
-      res.status(500).json({ message: '서버 오류' })
+      next(error)
    }
 })
 

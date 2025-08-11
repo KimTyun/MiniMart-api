@@ -70,7 +70,7 @@ router.get('/', () => {
 router.get('/status', async (req, res, next) => {
    try {
       if (req.isAuthenticated()) {
-         const { id, name, email, role, profile_img } = req.user
+         const { id, name, email, role, profile_img, age } = req.user
          res.status(200).json({
             isAuthenticated: true,
             user: {
@@ -79,6 +79,7 @@ router.get('/status', async (req, res, next) => {
                role,
                email,
                profile_img,
+               age,
             },
          })
       } else {
