@@ -2,11 +2,16 @@ const express = require('express')
 const router = express.Router()
 const { authorize } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
-const { Item, ItemOption, ItemImg, Hashtag } = require('../../models')
+const { Item, ItemOption, ItemImg, Hashtag, Seller } = require('../../models')
 const { sequelize } = require('../../models')
 const fs = require('fs')
 const multer = require('multer')
 const path = require('path')
+const { where } = require('sequelize')
+const { count } = require('console')
+
+console.log('Item model name:', Item?.name, 'table:', Item?.getTableName?.())
+console.log('ItemImg model name:', ItemImg?.name, 'table:', ItemImg?.getTableName?.())
 
 //upload/item 폴더가 없을 경우 생성
 try {
@@ -135,6 +140,42 @@ options는 option 객체({name,price,req_item_yn})가 담겨있는 배열,
 hashtags는 hashtag가 담겨있는 배열, 
 deleteImg는 삭제할 이미지의 아이디가 담겨있는 배열 입니다.
 */
+
+// 최근 상품 조회
+router.get('/recent', async (req, res, next) => {
+   try {
+      const items = await Item.findAll({
+         include: [
+            {
+               model: ItemImg,
+               where: { rep_img_yn: true },
+               required: false,
+               attributes: ['id', 'img_url', 'rep_img_yn'],
+            },
+            {
+               model: Seller,
+               attributes: ['id', 'name'],
+            },
+         ],
+         attributes: ['id', 'name', 'price', 'stock_number', 'status', 'createdAt'],
+         order: [['createdAt', 'DESC']],
+         limit: 3,
+      })
+
+      res.json({
+         success: true,
+         message: '최근 상품 불러오기 성공',
+         count: items.length,
+         items,
+      })
+   } catch (error) {
+      console.error('GET /item/recent error =>', error)
+      error.status = error.status || 500
+      error.message = error.message || '최근 상품을 불러오는중 오류 발생'
+      next(error)
+   }
+})
+
 router.put('/:itemId', authorize(ROLE.SELLER), upload.array('img'), async (req, res, next) => {
    const transaction = await sequelize.transaction()
    try {
