@@ -92,7 +92,7 @@ router.post('/register', authCtrl.register)
  */
 router.post('/login', authCtrl.login)
 
-// 로그아웃 (프론트단에서 토큰 삭제 위주이므로 서버에선 의미 없음. 토큰 블랙리스트 처리할 경우만 필요)
+// 로그아웃
 /**
  * @swagger
  * /auth/logout:

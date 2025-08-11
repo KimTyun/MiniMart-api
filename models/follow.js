@@ -37,6 +37,7 @@ module.exports = class Follow extends Sequelize.Model {
       Follow.belongsTo(db.Seller, {
          targetKey: 'id',
          foreignKey: 'seller_id',
+         as: 'Seller',
          onDelete: 'CASCADE',
       })
       Follow.belongsTo(db.User, {

@@ -72,6 +72,16 @@ exports.login = (req, res, next) => {
             return next(error)
          }
 
+         // JWT 토큰 생성
+         const token = jwt.sign(
+            {
+               id: user.id,
+               email: user.email,
+               role: user.role,
+            },
+            SECRET,
+            { expiresIn: '1h' }
+         )
          return res.status(200).json({
             success: true,
             message: '로그인 성공',
@@ -81,6 +91,7 @@ exports.login = (req, res, next) => {
                name: user.name,
                role: user.role,
             },
+            token,
          })
       })
    })(req, res, next)
