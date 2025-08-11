@@ -14,7 +14,13 @@ require('dotenv').config()
  *       302:
  *         description: 구글 로그인 페이지로 리디렉션됩니다.
  */
-router.get('/login', passport.authenticate('google', { scope: ['profile', 'email'] }))
+router.get(
+   '/login',
+   passport.authenticate('google', {
+      scope: ['profile', 'email'],
+      prompt: 'select_account',
+   })
+)
 
 /**
  * @swagger
@@ -29,6 +35,31 @@ router.get('/login', passport.authenticate('google', { scope: ['profile', 'email
  */
 router.get('/callback', passport.authenticate('google', { failureRedirect: `${process.env.FRONTEND_APP_URL}?error=google_login_failed'` }), (req, res) => {
    console.log('[passport] 구글 로그인 성공, 사용자:', req.user)
-   res.redirect(`${process.env.FRONTEND_APP_URL}`)
+   res.redirect(`${process.env.FRONTEND_APP_URL}/login/success/google`)
 })
 module.exports = router
+
+router.post('/setcookie', (req, res, next) => {
+   try {
+      res.cookie('myInfoConfig', 'myInfoConfig', {
+         httpOnly: true,
+         secure: false,
+         sameSite: 'lax',
+         maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      res.json({ message: '쿠키 설정 완료' })
+   } catch (error) {
+      console.log(error)
+      error.message = '쿠키 설정중 에러발생'
+      next(error)
+   }
+})
+
+router.get('/checkcookie', (req, res) => {
+   const myInfoConfig = req.cookies.myInfoConfig
+   if (!myInfoConfig) {
+      return res.json({ expired: true, message: '쿠키없음' })
+   } else {
+      return res.json({ expired: false, message: '쿠키있음' })
+   }
+})
