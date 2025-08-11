@@ -200,7 +200,7 @@ router.get('/', isLoggedIn, async (req, res) => {
    }
 })
 
-// 내 정보 수정 (통합)
+// 내 정보 수정
 router.patch('/edit', isLoggedIn, async (req, res) => {
    try {
       const userId = req.user.id // middlewares에서 토큰 검증 후 붙은 값
