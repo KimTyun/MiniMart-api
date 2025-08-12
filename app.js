@@ -12,6 +12,7 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
+const sellerRouter = require('./routes/auth/seller')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
@@ -81,6 +82,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
+app.use('/auth/seller', sellerRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
