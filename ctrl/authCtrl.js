@@ -4,7 +4,7 @@ const crypto = require('crypto')
 const nodemailer = require('nodemailer')
 const passport = require('passport')
 
-const { User } = require('../models')
+const { sequelize, User, Seller } = require('../models')
 const { sendMail } = require('../routes/utils/mailer') // 컨픽에서 메일 전송 함수 호출
 
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
@@ -15,10 +15,73 @@ const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString(
 
 // routes에 있는 auth폴더의 각각 .js 파일들 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
 
+// controllers/authController.js
+
+exports.registerSeller = async (req, res) => {
+   const t = await sequelize.transaction()
+   try {
+      const userId = req.user?.id
+      if (!userId) {
+         await t.rollback()
+         return res.status(401).json({ message: '로그인이 필요합니다.' })
+      }
+
+      const { name, introduce, phone_number, banner_img, biz_reg_no, representative_name, main_products, business_address } = req.body
+
+      // ⭐ 프론트에서 필수값 검증하지만, 최소 방어(권한/중복)만 백엔드에서
+      const user = await User.findByPk(userId, { transaction: t, lock: t.LOCK.UPDATE })
+      if (!user) {
+         await t.rollback()
+         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
+      }
+      if (user.role === 'SELLER') {
+         await t.rollback()
+         return res.status(409).json({ message: '이미 판매자입니다.' })
+      }
+
+      // 사업자번호/셀러프로필 중복 방지
+      const [dupBiz, existingSeller] = await Promise.all([Seller.findOne({ where: { biz_reg_no }, transaction: t }), Seller.findOne({ where: { id: userId }, transaction: t })])
+      if (dupBiz) {
+         await t.rollback()
+         return res.status(409).json({ message: '이미 등록된 사업자등록번호입니다.' })
+      }
+      if (existingSeller) {
+         await t.rollback()
+         return res.status(409).json({ message: '이미 판매자 프로필이 존재합니다.' })
+      }
+
+      // 셀러 생성(id = users.id)
+      const seller = await Seller.create(
+         {
+            id: userId,
+            name,
+            introduce: introduce ?? null,
+            phone_number,
+            banner_img: banner_img ?? null,
+            biz_reg_no,
+            representative_name,
+            main_products: main_products ?? null,
+            business_address,
+         },
+         { transaction: t }
+      )
+
+      // role 승급
+      await user.update({ role: 'SELLER' }, { transaction: t })
+
+      await t.commit()
+      return res.status(201).json({ message: '판매자 등록 완료', seller })
+   } catch (err) {
+      console.error(err)
+      await t.rollback()
+      return res.status(500).json({ message: '판매자 등록 에러' })
+   }
+}
+
 // 회원가입
 exports.register = async (req, res) => {
    try {
-      const { name, email, address, password, phone_number, age, profile_img, role = 'buyer' } = req.body
+      const { name, email, address, zipcode, extraaddress, detailaddress, password, phone_number, age, profile_img, role = 'buyer' } = req.body
       const defaultProfileImg = '/uploads/profile-images/default.png'
 
       // 이메일 중복 확인
@@ -36,6 +99,9 @@ exports.register = async (req, res) => {
          email,
          address,
          password: hash,
+         zipcode,
+         detailaddress,
+         extraaddress,
          age,
          role,
          phone_number,

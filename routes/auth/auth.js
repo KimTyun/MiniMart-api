@@ -2,6 +2,7 @@ const express = require('express')
 
 const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
 const authCtrl = require('../../ctrl/authCtrl')
+const adminCtrl = require('../../ctrl/adminCtrl')
 
 const User = require('../../models/user')
 
@@ -145,5 +146,8 @@ router.get('/me', isLoggedIn, async (req, res) => {
       res.status(500).json({ success: false, message: '사용자 정보 불러오기 실패' })
    }
 })
+
+router.post('/approve-seller', isAdmin, adminCtrl.approveSeller)
+router.get('/users', isAdmin, adminCtrl.getAllUsers)
 
 module.exports = router

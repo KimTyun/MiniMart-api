@@ -17,7 +17,19 @@ module.exports = class User extends Sequelize.Model {
                type: DataTypes.STRING(255),
                allowNull: true,
             },
+            zipcode: {
+               type: DataTypes.STRING(5),
+               allowNull: true,
+            },
             address: {
+               type: DataTypes.STRING(255),
+               allowNull: true,
+            },
+            detailaddress: {
+               type: DataTypes.STRING(255),
+               allowNull: true,
+            },
+            extraaddress: {
                type: DataTypes.STRING(255),
                allowNull: true,
             },

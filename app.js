@@ -12,6 +12,7 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
+const sellerRouter = require('./routes/auth/seller')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
@@ -81,10 +82,19 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
+app.use('/auth/seller', sellerRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
    const errorMessage = err.message || '서버 내부 오류'
+   if (process.env.NODE_ENV === 'development') {
+      return res.status(statusCode).json({
+         success: false,
+         message: errorMessage,
+         stack: err.stack, // 스택 트레이스 추가
+         error: err,
+      })
+   }
    if (process.env.NODE_ENV === 'development') {
       console.log(err)
    }
