@@ -1,10 +1,9 @@
 const { isLoggedIn } = require('../../middlewares/middlewares')
 
 const express = require('express')
-const authCtrl = require('../../ctrl/authCtrl')
 require('dotenv').config()
 const router = express.Router()
-const { User, Order, Follow, Item, ItemImg, Seller } = require('../../models')
+const { User, Order, Follow, Item, ItemImg, Seller, OrderItem } = require('../../models')
 
 // mypage.js는 내 정보 페이지의 구매내역 및 팔로우 한 판매자 표시, 내 정보 수정, 회원 탈퇴 등을 담당합니다.
 
@@ -95,18 +94,24 @@ router.get('/', isLoggedIn, async (req, res, next) => {
          attributes: ['id', 'name', 'email', 'phone_number', 'address', 'profile_img', 'role'],
       })
 
-      // 구매 내역 조회 (orders + items 조인)
+      // 구매 내역 조회 (orderitem 조인)
       const orders = await Order.findAll({
          where: { buyer_id: userId },
          include: [
             {
-               model: Item,
-               attributes: ['id', 'name'],
+               model: OrderItem,
+               attributes: ['count'],
                include: [
                   {
-                     model: ItemImg,
-                     attributes: ['url'],
-                     limit: 1,
+                     model: Item,
+                     attributes: ['id', 'name'],
+                     include: [
+                        {
+                           model: ItemImg,
+                           attributes: ['url'],
+                           limit: 1,
+                        },
+                     ],
                   },
                ],
             },
@@ -126,7 +131,7 @@ router.get('/', isLoggedIn, async (req, res, next) => {
          followings: followings.map((f) => ({
             seller_id: f.Seller.id,
             seller_name: f.Seller.name,
-            seller_profile_img: f.Seller.profile_img,
+            // seller_banner_img: f.Seller.banner_img,
          })),
       })
    } catch (error) {
