@@ -43,7 +43,7 @@ const upload = multer({
 
 //상품 등록
 /**
- * name , price, stock_number description, status, is_sale, sale options([{name, price, req_item_yn}]), img, hashtags[tag1,tag2,tag3]
+ * name , price, stock_number description, status, is_sale, sale options([{name, price, rep_item_yn}]), img, hashtags[tag1,tag2,tag3]
  */
 router.post(
    '/',
@@ -86,7 +86,7 @@ router.post(
                      item_id: newItem.id,
                      name: option.name,
                      price: option.price,
-                     req_item_yn: index === 0,
+                     rep_item_yn: index === 0,
                   },
                   { transaction }
                )
@@ -100,7 +100,7 @@ router.post(
                   {
                      item_id: newItem.id,
                      img_url: file.location || `/uploads/item/${file.filename}`,
-                     req_img_yn: index === 0,
+                     rep_img_yn: index === 0,
                   },
                   { transaction }
                )
@@ -154,7 +154,7 @@ router.post(
 //상품 수정 (item 수정/ item_option 수정/ item_img수정/ hashtag 수정)
 /*
 name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg, img 데이터가 담겨와야 합니다.
-options는 option 객체({name,price,req_item_yn})가 담겨있는 배열, 
+options는 option 객체({name,price,rep_item_yn})가 담겨있는 배열, 
 hashtags는 hashtag가 담겨있는 배열, 
 deleteImg는 삭제할 이미지의 아이디가 담겨있는 배열 입니다.
 */
@@ -317,7 +317,7 @@ router.put('/:itemId', authorize(ROLE.SELLER), upload.array('img'), async (req, 
                   item_id: item.id,
                   name: option.name,
                   price: option.price,
-                  req_item_yn: option.req_item_yn || false,
+                  rep_item_yn: option.rep_item_yn || false,
                },
                { transaction }
             )

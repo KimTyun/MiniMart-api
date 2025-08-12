@@ -1,19 +1,18 @@
 const { Sequelize, DataTypes } = require('sequelize')
 
-module.exports = class ItemImg extends Sequelize.Model {
+module.exports = class ItemOption extends Sequelize.Model {
    static init(sequelize) {
       return super.init(
          {
-            img_url: {
+            name: {
                type: DataTypes.STRING(255),
                allowNull: false,
             },
-            req_img_yn: {
-               type: DataTypes.BOOLEAN,
+            price: {
+               type: DataTypes.INTEGER,
                allowNull: false,
-               defaultValue: false,
             },
-            details_img_yn: {
+            rep_item_yn: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
                defaultValue: false,
@@ -21,11 +20,11 @@ module.exports = class ItemImg extends Sequelize.Model {
          },
          {
             sequelize,
-            timestamps: false,
+            timestamps: true,
             underscored: false,
-            modelName: 'ItemImg',
-            tableName: 'item_img',
-            paranoid: false,
+            modelName: 'ItemOption',
+            tableName: 'item_option',
+            paranoid: true,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',
          }
@@ -33,9 +32,13 @@ module.exports = class ItemImg extends Sequelize.Model {
    }
 
    static associate(db) {
-      ItemImg.belongsTo(db.Item, {
+      ItemOption.belongsTo(db.Item, {
          foreignKey: 'item_id',
          targetKey: 'id',
+      })
+      ItemOption.hasOne(db.OrderItem, {
+         foreignKey: 'item_option_id',
+         sourceKey: 'id',
       })
    }
 }
