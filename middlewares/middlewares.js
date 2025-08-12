@@ -1,116 +1,55 @@
+// middlewares/middlewares.js
 const jwt = require('jsonwebtoken')
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
 const { ROLE, ROLE_MAP } = require('../constants/role')
 
-/**
- * isAdmin, isSeller, isLoggedIn 등을 통합한 미들웨어 입니다. 매개변수로 어떤 역할만 허용할 것인가를 정할 수 있습니다. 예를 들어 isAdmin을 사용해야하는 경우 authorize(ROLE.ADMIN) 이렇게 사용할 경우 동일한 기능을 합니다. 여러가지 역할을 허용해야 할 경우 비트연산자 | 를 활용하면 여러가지 역할도 구분할 수 있습니다. 예를들어 authorize(ROLE.ADMIN | ROLE.SELLER) 이렇게 사용할 경우 어드민과 판매자만 허용되고 비회원, 구매자 역할은 허용되지 않습니다. 모든 회원만 허용하고 싶으면 ROLE.ALL을 사용하면 됩니다.
- *
- * @param {ROLE} requiredRolesBitmask constants 폴더의 role.js 를 가져와서 사용합니다.
- * @returns
- */
-exports.authorize = function (requiredRolesBitmask) {
-   return (req, res, next) => {
-      // 로그인이 되지 않았을경우 에러 미들웨어로 에러 전송
-      if (!req.isAuthenticated()) {
-         const error = new Error('로그인이 필요합니다.')
-         error.status = 403
-         return next(error)
-      }
+const normRole = (r) => String(r || '').toUpperCase()
 
-      const roleStr = req.user?.role
+// 1) JWT 우선, 없으면 passport 세션을 보조로 사용
+exports.attachUser = (req, res, next) => {
+   const h = req.headers.authorization
+   if (h?.startsWith('Bearer ')) {
+      const token = h.split(' ')[1]
+      try {
+         const decoded = jwt.verify(token, SECRET)
+         req.user = decoded
+         return next()
+      } catch (e) {
+         return res.status(401).json({ message: '유효하지 않은 토큰입니다.' })
+      }
+   }
+   if (typeof req.isAuthenticated === 'function' && req.isAuthenticated()) {
+      return next()
+   }
+   return next()
+}
+
+exports.requireAuth = (req, res, next) => {
+   if (req.user) return next()
+   return res.status(401).json({ message: '로그인이 필요합니다.' })
+}
+
+exports.requireRoles = (requiredRolesBitmask) => {
+   return (req, res, next) => {
+      if (!req.user) return res.status(401).json({ message: '로그인이 필요합니다.' })
+      const roleStr = normRole(req.user.role)
       const userRoleBit = ROLE_MAP[roleStr]
+      if (!userRoleBit) return res.status(403).json({ message: '권한 정보가 올바르지 않습니다.' })
 
       if ((userRoleBit & requiredRolesBitmask) === 0) {
-         const error = new Error()
-         error.status = 403
-         if (requiredRolesBitmask === 2) {
-            error.message = '판매자만 이용 가능한 기능입니다.'
-         } else if (requiredRolesBitmask == 4) {
-            error.message = '관리자만 이용 가능한 기능입니다.'
-         } else if (requiredRolesBitmask > 4) {
-            error.message = '관리자 혹은 판매자만 이용 가능한 기능입니다.'
-         } else {
-            error.message = '접근 권한이 없습니다.'
-         }
-         return next(error)
+         let message = '접근 권한이 없습니다.'
+         if (requiredRolesBitmask === ROLE.SELLER) message = '판매자만 이용 가능한 기능입니다.'
+         else if (requiredRolesBitmask === ROLE.ADMIN) message = '관리자만 이용 가능한 기능입니다.'
+         else if (requiredRolesBitmask === (ROLE.SELLER | ROLE.ADMIN)) message = '관리자 혹은 판매자만 이용 가능합니다.'
+         return res.status(403).json({ message })
       }
-
       next()
    }
 }
-exports.verifyToken = (req, res, next) => {
-   const authHeader = req.headers.authorization
 
-   if (!authHeader) {
-      return res.status(401).json({ message: '토큰이 필요합니다.' })
-   }
-
-   const token = authHeader.split(' ')[1]
-
-   try {
-      const decoded = jwt.verify(token, SECRET)
-      req.user = decoded
-      next()
-   } catch (error) {
-      return res.status(401).json({ message: '유효하지 않은 토큰입니다.' })
-   }
-}
-
-exports.isLoggedIn = (req, res, next) => {
-   const authHeader = req.headers.authorization
-   console.log('💥 요청된 Authorization:', req.headers.authorization)
-
-   if (!authHeader) {
-      return res.status(401).json({ message: '인증 토큰이 필요합니다.' })
-   }
-
-   const token = authHeader.split(' ')[1]
-
-   try {
-      const decoded = jwt.verify(token, SECRET) // ⬅️ 여기도 동일한 SECRET 사용
-      console.log('🧠 디코딩된 사용자:', decoded)
-      req.user = decoded
-      next()
-   } catch (error) {
-      console.error('❌ 토큰 디코딩 실패:', error)
-      return res.status(401).json({ message: '유효하지 않은 토큰입니다.' })
-   }
-}
-
-exports.isSeller = (req, res, next) => {
-   // 로그인 상태 확인
-   if (req.isAuthenticated()) {
-      // 사용자 권한 확인
-      if (req.user && req.user.role === 'SELLER') {
-         next() // role이 ADMIN이면 다음 미들웨어로 이동
-      } else {
-         //권한 부족
-         const error = new Error('판매자 계정만 이용 가능한 기능입니다.')
-         error.status = 403
-         return next(error)
-      }
-   } else {
-      const error = new Error('로그인이 필요합니다.')
-      error.status = 403
-      return next(error)
-   }
-}
-
-exports.isAdmin = (req, res, next) => {
-   // 로그인 상태 확인
-   if (req.isAuthenticated()) {
-      // 사용자 권한 확인
-      if (req.user && req.user.role === 'ADMIN') {
-         next() // role이 ADMIN이면 다음 미들웨어로 이동
-      } else {
-         //권한 부족
-         const error = new Error('관리자 권한이 필요합니다.')
-         error.status = 403
-         return next(error)
-      }
-   } else {
-      const error = new Error('로그인이 필요합니다.')
-      error.status = 403
-      return next(error)
-   }
-}
+// ✅ 과거 이름들 호환
+exports.verifyToken = [exports.attachUser, exports.requireAuth]
+exports.isLoggedIn = [exports.attachUser, exports.requireAuth]
+exports.isSeller = [exports.attachUser, exports.requireAuth, exports.requireRoles(ROLE.SELLER)]
+exports.isAdmin = [exports.attachUser, exports.requireAuth, exports.requireRoles(ROLE.ADMIN)]
+exports.authorize = (bitmask) => [exports.attachUser, exports.requireAuth, exports.requireRoles(bitmask)]
