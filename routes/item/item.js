@@ -45,94 +45,111 @@ const upload = multer({
 /**
  * name , price, stock_number description, status, is_sale, sale options([{name, price, req_item_yn}]), img, hashtags[tag1,tag2,tag3]
  */
-router.post('/', /*authorize(ROLE.SELLER),*/ upload.array('img'), async (req, res, next) => {
-   const transaction = await sequelize.transaction()
-   try {
-      if (!req.files || req.files.length === 0) {
-         const error = new Error('상품 이미지를 최소 1개는 업로드 해야 합니다.')
-         error.status = 400
-         throw error
-      }
+router.post(
+   '/',
+   /*authorize(ROLE.SELLER),*/ upload.fields([
+      { name: 'imgs', maxCount: 4 }, // imgs는 여러개 가능
+      { name: 'img', maxCount: 1 }, // img는 1개만
+   ]),
+   async (req, res, next) => {
+      const transaction = await sequelize.transaction()
+      try {
+         if (!req.files || !req.files['imgs'] || req.files['imgs'].length === 0 || !req.files['img'] || req.files['img'].length === 0) {
+            const error = new Error('상품 이미지를 최소 1개는 업로드 해야 합니다.')
+            error.status = 400
+            throw error
+         }
 
-      const { name, price, stock_number, description, status, is_sale, sale, options, hashtags } = req.body
+         const { name, price, stock_number, description, status, is_sale, sale, options, hashtags } = req.body
 
-      // Item db에 추가
-      const newItem = await Item.create(
-         {
-            name,
-            price,
-            stock_number,
-            description,
-            status: status || 'FOR_SALE',
-            is_sale: is_sale || false,
-            sale: sale || 0,
-         },
-         { transaction }
-      )
-
-      const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
-
-      // 아이템 옵션도 db에 추가
-      const newItemOptions = await Promise.all(
-         parsedOptions.map((option) => {
-            return ItemOption.create(
-               {
-                  item_id: newItem.id,
-                  name: option.name,
-                  price: option.price,
-                  req_item_yn: option.req_item_yn || false,
-               },
-               { transaction }
-            )
-         })
-      )
-
-      // 아이템 이미지도 db에 추가
-      await Promise.all(
-         req.files.map((file) =>
-            ItemImg.create(
-               {
-                  item_id: newItem.id,
-                  img_url: file.location || `/uploads/item/${file.filename}`,
-               },
-               { transaction }
-            )
+         // Item db에 추가
+         const newItem = await Item.create(
+            {
+               name,
+               price,
+               stock_number,
+               description,
+               status: status || 'FOR_SALE',
+               is_sale: is_sale === 'true' || false,
+               sale: Number(sale) || 0,
+            },
+            { transaction }
          )
-      )
 
-      const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
+         const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
 
-      // 해시태그도 추가
-      if (parsedHashtags) {
-         const hashtagInstances = await Promise.all(
-            parsedHashtags.map((hashtag) => {
-               return Hashtag.findOrCreate({
-                  where: { content: hashtag },
-                  transaction,
-               }).then(([instance]) => instance)
+         // 아이템 옵션도 db에 추가
+         const newItemOptions = await Promise.all(
+            parsedOptions.map((option, index) => {
+               return ItemOption.create(
+                  {
+                     item_id: newItem.id,
+                     name: option.name,
+                     price: option.price,
+                     req_item_yn: index === 0,
+                  },
+                  { transaction }
+               )
             })
          )
-         await newItem.addHashtags(hashtagInstances, { transaction })
-      }
 
-      //모두 추가하는데 문제가 없었으면 추가한 내용 commit하고 완료
-      await transaction.commit()
-      res.status(201).json({
-         success: true,
-         message: '성공적으로 상품이 등록되었습니다.',
-         item: {
-            ...newItem.get({ plain: true }),
-            options: newItemOptions,
-         },
-      })
-   } catch (error) {
-      console.error(error)
-      await transaction.rollback()
-      error.status = error.status || 500
-      error.message = error.message || '상품 등록 중 문제 발생'
-      next(error)
+         // 아이템 이미지도 db에 추가
+         await Promise.all(
+            req.files['imgs'].map((file, index) =>
+               ItemImg.create(
+                  {
+                     item_id: newItem.id,
+                     img_url: file.location || `/uploads/item/${file.filename}`,
+                     req_img_yn: index === 0,
+                  },
+                  { transaction }
+               )
+            )
+         )
+         //상세설정 이미지 따로 추가
+         await ItemImg.create(
+            {
+               item_id: newItem.id,
+               img_url: req.files['img'][0].location || `/uploads/item/${req.files['img'][0].filename}`,
+               details_img_yn: true,
+            },
+            { transaction }
+         )
+
+         const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
+
+         // 해시태그도 추가
+         if (parsedHashtags) {
+            const hashtagInstances = await Promise.all(
+               parsedHashtags.map((hashtag) => {
+                  return Hashtag.findOrCreate({
+                     where: { content: hashtag },
+                     transaction,
+                  }).then(([instance]) => instance)
+               })
+            )
+            await newItem.addHashtags(hashtagInstances, { transaction })
+         }
+
+         //모두 추가하는데 문제가 없었으면 추가한 내용 commit하고 완료
+         await transaction.commit()
+         res.status(201).json({
+            success: true,
+            message: '성공적으로 상품이 등록되었습니다.',
+            item: {
+               ...newItem.get({ plain: true }),
+               options: newItemOptions,
+            },
+         })
+      } catch (error) {
+         console.error(error)
+         await transaction.rollback()
+         error.status = error.status || 500
+         error.message = error.message || '상품 등록 중 문제 발생'
+         next(error)
+      }
    }
-})
+)
 
 //상품 수정 (item 수정/ item_option 수정/ item_img수정/ hashtag 수정)
 /*

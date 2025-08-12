@@ -8,7 +8,12 @@ module.exports = class ItemImg extends Sequelize.Model {
                type: DataTypes.STRING(255),
                allowNull: false,
             },
-            rep_img_yn: {
+            req_img_yn: {
+               type: DataTypes.BOOLEAN,
+               allowNull: false,
+               defaultValue: false,
+            },
+            details_img_yn: {
                type: DataTypes.BOOLEAN,
                allowNull: false,
                defaultValue: false,
