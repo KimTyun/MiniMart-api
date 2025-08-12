@@ -12,20 +12,50 @@ module.exports = class Seller extends Sequelize.Model {
                   key: 'id',
                },
             },
+
+            // 상호 법인명
             name: {
                type: DataTypes.STRING(100),
                allowNull: false,
                unique: true,
             },
+            // 회사 소개
             introduce: {
                type: DataTypes.TEXT,
                allowNull: true,
             },
+            // 대표 번호
             phone_number: {
                type: DataTypes.STRING(20),
                allowNull: false,
             },
+            // 사본 업로드
             banner_img: {
+               type: DataTypes.STRING(255),
+               allowNull: true,
+            },
+            // 사업자 등록번호
+            biz_reg_no: {
+               type: DataTypes.STRING(20),
+               allowNull: false,
+               unique: true,
+               validate: {
+                  is: /^[0-9-]+$/i,
+                  len: [10, 20], // 10자리~하이픈 포함 최대 20
+               },
+            },
+            // 대표자 명
+            representative_name: {
+               type: DataTypes.STRING(50),
+               allowNull: false,
+            },
+            // 대표 판매물품
+            main_products: {
+               type: DataTypes.STRING(255),
+               allowNull: true,
+            },
+            // 사업장 주소
+            business_address: {
                type: DataTypes.STRING(255),
                allowNull: true,
             },

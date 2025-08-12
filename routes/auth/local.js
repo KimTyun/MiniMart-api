@@ -125,11 +125,11 @@ router.post('/logout', isLoggedIn, async (req, res, next) => {
 })
 
 // 자동 로그인 (JWT로 로그인 상태 확인)
-/**
+/** 
  * @swagger
- * /auth/refresh:
+ * /auth/ refresh:
  *   post:
- *     summary: 토큰 재발급 (자동 로그인용)
+ *     summary: 토큰 재발급 (자동 로 그인용)
  *     tags: [Auth]
  *     requestBody:
  *       required: true
