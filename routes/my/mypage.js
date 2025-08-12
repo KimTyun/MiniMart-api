@@ -1,11 +1,38 @@
 const { isLoggedIn } = require('../../middlewares/middlewares')
 
 const express = require('express')
-require('dotenv').config()
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
 const router = express.Router()
+require('dotenv').config()
 const { User, Order, Follow, Item, ItemImg, Seller, OrderItem } = require('../../models')
 
 // mypage.js는 내 정보 페이지의 구매내역 및 팔로우 한 판매자 표시, 내 정보 수정, 회원 탈퇴 등을 담당합니다.
+
+// uploads/profile-images 없으면 생성
+const uploadDir = path.join(__dirname, '../../uploads/profile-images')
+if (!fs.existsSync(uploadDir)) {
+   fs.mkdirSync(uploadDir, { recursive: true })
+}
+
+// multer 설정
+const upload = multer({
+   storage: multer.diskStorage({
+      destination(req, file, cb) {
+         const uploadDir = path.join(__dirname, '../../uploads/profile-images')
+         if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true })
+         }
+         cb(null, uploadDir)
+      },
+      filename(req, file, cb) {
+         const ext = path.extname(file.originalname)
+         cb(null, Date.now() + ext)
+      },
+   }),
+   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB 제한
+})
 
 // 내 정보 조회
 /**
@@ -169,7 +196,7 @@ router.get('/', isLoggedIn, async (req, res, next) => {
  *       500:
  *         description: 서버 에러
  */
-router.put('/edit', isLoggedIn, async (req, res, next) => {
+router.patch('/edit', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
       const { name, phone_number, address } = req.body
@@ -249,6 +276,27 @@ router.post('/unfollow/:sellerId', isLoggedIn, async (req, res, next) => {
       await Follow.destroy({ where: { buyer_id: userId, seller_id: sellerId } })
 
       res.json({ message: '언팔로우 되었습니다.' })
+   } catch (error) {
+      next(error)
+   }
+})
+
+// 프사 업로드
+router.post('/uploads/profile-image', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
+   try {
+      if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' })
+
+      // 업로드된 이미지 경로
+      const fileUrl = `/uploads/profile-images/${req.file.filename}`
+
+      // 유저 DB에 프로필 이미지 경로 업데이트 (필요시)
+      const user = await User.findByPk(req.user.id)
+      if (user) {
+         user.profile_img = fileUrl
+         await user.save()
+      }
+
+      res.json({ url: fileUrl })
    } catch (error) {
       next(error)
    }
