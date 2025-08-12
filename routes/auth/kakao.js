@@ -109,9 +109,4 @@ router.get('/me', isLoggedIn, (req, res) => {
    })
 })
 
-// 4. 로그아웃 API
-router.post('/logout', (req, res) => {
-   res.json({ message: '로그아웃 성공, 로컬 토큰 삭제하세요.' })
-})
-
 module.exports = router
