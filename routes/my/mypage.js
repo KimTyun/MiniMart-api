@@ -282,7 +282,7 @@ router.post('/unfollow/:sellerId', isLoggedIn, async (req, res, next) => {
 })
 
 // 프사 업로드
-router.post('/uploads/profile-image', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
+router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
    try {
       if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' })
 
