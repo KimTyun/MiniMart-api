@@ -76,7 +76,7 @@ router.post(
                status: status || 'FOR_SALE',
                is_sale: is_sale === 'true' || false,
                sale: Number(sale) || 0,
-               seller_id: req?.user?.id || null, //완성 후 수정 필요(seller아이디 없을 시 에러)
+               seller_id: null /*req?.user?.id */, //완성 후 수정 필요(seller아이디 없을 시 에러)
             },
             { transaction }
          )
@@ -124,7 +124,7 @@ router.post(
             {
                item_id: newItem.id,
                img_url: req.files['rep_img'][0].location || `/uploads/item/${req.files['rep_img'][0].filename}`,
-               details_img_yn: true,
+               rep_img_yn: true,
             },
             { transaction }
          )
@@ -453,36 +453,89 @@ router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), async (req, res, 
 })
 
 // 단일상품 조회(상품 상제정보)
-router.get(
-   '/:itemId',
-   /*authorize(ROLE.ALL),*/ async (req, res, next) => {
-      try {
-         const { itemId } = req.params
-         const item = await Item.findByPk(itemId, {
-            include: [
-               {
-                  model: Hashtag,
-                  through: { attributes: [] },
-               },
-               {
-                  model: ItemImg,
-               },
-               {
-                  model: ItemOption,
-               },
-            ],
-         })
-         res.json({
-            item,
-            success: true,
-            message: '성공적으로 상품 정보를 불러왔습니다.',
-         })
-      } catch (error) {
-         error.status = error.status || 500
-         error.message = error.message || '상품 정보를 불러오는중 오류 발생'
-         next(error)
+router.get('/:itemId', async (req, res, next) => {
+   try {
+      const { itemId } = req.params
+      const item = await Item.findByPk(itemId, {
+         include: [
+            {
+               model: Hashtag,
+               through: { attributes: [] },
+            },
+            {
+               model: ItemImg,
+            },
+            {
+               model: ItemOption,
+            },
+            {
+               model: Seller,
+               attributes: ['id', 'name'],
+               include: [
+                  {
+                     model: User,
+                     attributes: ['id', 'profile_img'],
+                  },
+               ],
+            },
+         ],
+      })
+
+      if (!item) {
+         const error = new Error('상품을 찾을 수 없습니다.')
+         error.status = 404
+         throw error
       }
+      res.json({
+         item,
+         success: true,
+         message: '성공적으로 상품 정보를 불러왔습니다.',
+      })
+   } catch (error) {
+      error.status = error.status || 500
+      error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
    }
-)
+})
+
+// 판매자 기준으로 상품 조회
+router.get('/seller/:sellerId', async (req, res, next) => {
+   try {
+      const { sellerId } = req.params
+      const seller = await Seller.findByPk(sellerId)
+      if (!seller) {
+         const error = new Error('판매자 정보를 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+      const items = await Item.findAll({
+         where: { seller_id: sellerId },
+         limit: 5,
+         include: [
+            {
+               model: ItemImg,
+               where: {
+                  rep_img_yn: true,
+               },
+            },
+         ],
+      })
+      if (!items) {
+         const error = new Error('해당 판매자의 상품을 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+
+      res.status(200).json({
+         success: true,
+         message: '성공적으로 판매자 상품 목록을 불러왔습니다.',
+         items,
+      })
+   } catch (error) {
+      error.status = error.status || 500
+      error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
+   }
+})
 
 module.exports = router
