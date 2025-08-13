@@ -18,6 +18,7 @@ const sellerRouter = require('./routes/auth/seller')
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
+const searchRouter = require('./routes/item/search')
 
 const app = express()
 passportConfig()
@@ -82,6 +83,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
+app.use('/api/item', itemRouter)
+app.use('/api/item/search', searchRouter)
 app.use('/auth/seller', sellerRouter)
 
 app.use((err, req, res, next) => {
