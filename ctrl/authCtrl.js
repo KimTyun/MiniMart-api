@@ -15,8 +15,7 @@ const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString(
 
 // routes에 있는 auth폴더의 각각 .js 파일들 기능들을 담당함. 스웨거 때문에 코드 너무 길어져서 분리.
 
-// controllers/authController.js
-
+// 판매자 신청
 exports.registerSeller = async (req, res) => {
    const t = await sequelize.transaction()
    try {
@@ -28,8 +27,7 @@ exports.registerSeller = async (req, res) => {
 
       const { name, introduce, phone_number, banner_img, biz_reg_no, representative_name, main_products, business_address } = req.body
 
-      // ⭐ 프론트에서 필수값 검증하지만, 최소 방어(권한/중복)만 백엔드에서
-      const user = await User.findByPk(userId, { transaction: t, lock: t.LOCK.UPDATE })
+      const user = await User.findByPk(userId, { transaction: t })
       if (!user) {
          await t.rollback()
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
@@ -39,18 +37,12 @@ exports.registerSeller = async (req, res) => {
          return res.status(409).json({ message: '이미 판매자입니다.' })
       }
 
-      // 사업자번호/셀러프로필 중복 방지
-      const [dupBiz, existingSeller] = await Promise.all([Seller.findOne({ where: { biz_reg_no }, transaction: t }), Seller.findOne({ where: { id: userId }, transaction: t })])
+      const dupBiz = await Seller.findOne({ where: { biz_reg_no }, transaction: t })
       if (dupBiz) {
          await t.rollback()
          return res.status(409).json({ message: '이미 등록된 사업자등록번호입니다.' })
       }
-      if (existingSeller) {
-         await t.rollback()
-         return res.status(409).json({ message: '이미 판매자 프로필이 존재합니다.' })
-      }
 
-      // 셀러 생성(id = users.id)
       const seller = await Seller.create(
          {
             id: userId,
@@ -62,20 +54,23 @@ exports.registerSeller = async (req, res) => {
             representative_name,
             main_products: main_products ?? null,
             business_address,
+            status: 'PENDING',
          },
          { transaction: t }
       )
 
-      // role 승급
-      await user.update({ role: 'SELLER' }, { transaction: t })
-
       await t.commit()
-      return res.status(201).json({ message: '판매자 등록 완료', seller })
+      res.status(201).json({ message: '판매자 신청 완료 (승인 대기)', seller })
    } catch (err) {
       console.error(err)
       await t.rollback()
-      return res.status(500).json({ message: '판매자 등록 에러' })
+      res.status(500).json({ message: '판매자 등록 실패' })
    }
+}
+
+// 판매자 자격 신청
+exports.getSeller = (req, res) => {
+   res.send('판매자 자격 신청')
 }
 
 // 회원가입
@@ -234,11 +229,6 @@ exports.resetPwByEmail = async (req, res) => {
       console.error('비밀번호 변경 실패:', error)
       return res.status(500).json({ message: '서버 에러' })
    }
-}
-
-// 판매자 자격 신청
-exports.getSeller = (req, res) => {
-   res.send('판매자 자격 신청')
 }
 
 // [추가] 전화번호로 사용자 찾기 컨트롤러

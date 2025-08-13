@@ -85,6 +85,7 @@ app.use('/mypage', mypageRouter)
 app.use('/auth/seller', sellerRouter)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/files', filesRouter)
+app.use('/admin', require('./routes/auth/admin'))
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
