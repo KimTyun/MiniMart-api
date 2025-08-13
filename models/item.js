@@ -29,8 +29,8 @@ module.exports = class Item extends Sequelize.Model {
                allowNull: false,
                defaultValue: false,
             },
-            sale_per: {
-               type: DataTypes.FLOAT,
+            sale: {
+               type: DataTypes.INTEGER,
                allowNull: true,
             },
          },
