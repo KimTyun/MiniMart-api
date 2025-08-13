@@ -19,6 +19,7 @@ const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
 const searchRouter = require('./routes/item/search')
+const reviewRouter = require('./routes/item/review')
 
 const app = express()
 passportConfig()
@@ -86,6 +87,7 @@ app.use('/mypage', mypageRouter)
 app.use('/api/item', itemRouter)
 app.use('/api/item/search', searchRouter)
 app.use('/auth/seller', sellerRouter)
+app.use('/api/reviews', reviewRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
