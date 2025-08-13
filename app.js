@@ -18,6 +18,7 @@ const sellerRouter = require('./routes/auth/seller')
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
+const filesRouter = require('./routes/bizFile/files')
 const searchRouter = require('./routes/item/search')
 const qnaRouter = require('./routes/item/qna')
 
@@ -88,6 +89,8 @@ app.use('/api/item', itemRouter)
 app.use('/api/item/search', searchRouter)
 app.use('/auth/seller', sellerRouter)
 app.use('/api/qna', qnaRouter)
+app.use('/files', filesRouter)
+app.use('/admin', require('./routes/auth/admin'))
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
