@@ -44,17 +44,21 @@ const upload = multer({
 //상품 등록
 /**
  * name , price, stock_number description, status, is_sale, sale options([{name, price, rep_item_yn}]), img, hashtags[tag1,tag2,tag3]
+ * img : 상제정보 이미지
+ * rep_img : 대표이미지
+ * imgs : 상품 이미지들
  */
 router.post(
    '/',
    /*authorize(ROLE.SELLER),*/ upload.fields([
-      { name: 'imgs', maxCount: 4 }, // imgs는 여러개 가능
-      { name: 'img', maxCount: 1 }, // img는 1개만
+      { name: 'imgs', maxCount: 4 }, // 상품 이미지
+      { name: 'img', maxCount: 1 }, // 상품 상세설명 이미지
+      { name: 'rep_img', maxCount: 1 }, //상품 대표 이미지
    ]),
    async (req, res, next) => {
       const transaction = await sequelize.transaction()
       try {
-         if (!req.files || !req.files['imgs'] || req.files['imgs'].length === 0 || !req.files['img'] || req.files['img'].length === 0) {
+         if (!req.files || !req.files['imgs'] || req.files['imgs'].length === 0 || !req.files['img'] || req.files['img'].length === 0 || !req.files['rep_img']) {
             const error = new Error('상품 이미지를 최소 1개는 업로드 해야 합니다.')
             error.status = 400
             throw error
@@ -72,6 +76,7 @@ router.post(
                status: status || 'FOR_SALE',
                is_sale: is_sale === 'true' || false,
                sale: Number(sale) || 0,
+               seller_id: null /*req?.user?.id */, //완성 후 수정 필요(seller아이디 없을 시 에러)
             },
             { transaction }
          )
@@ -100,7 +105,6 @@ router.post(
                   {
                      item_id: newItem.id,
                      img_url: file.location || `/uploads/item/${file.filename}`,
-                     rep_img_yn: index === 0,
                   },
                   { transaction }
                )
@@ -112,6 +116,15 @@ router.post(
                item_id: newItem.id,
                img_url: req.files['img'][0].location || `/uploads/item/${req.files['img'][0].filename}`,
                details_img_yn: true,
+            },
+            { transaction }
+         )
+         //대표 이미지도 따로 추가
+         await ItemImg.create(
+            {
+               item_id: newItem.id,
+               img_url: req.files['rep_img'][0].location || `/uploads/item/${req.files['rep_img'][0].filename}`,
+               rep_img_yn: true,
             },
             { transaction }
          )
@@ -150,14 +163,6 @@ router.post(
       }
    }
 )
-
-//상품 수정 (item 수정/ item_option 수정/ item_img수정/ hashtag 수정)
-/*
-name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg, img 데이터가 담겨와야 합니다.
-options는 option 객체({name,price,rep_item_yn})가 담겨있는 배열, 
-hashtags는 hashtag가 담겨있는 배열, 
-deleteImg는 삭제할 이미지의 아이디가 담겨있는 배열 입니다.
-*/
 
 // 최근 상품 조회
 router.get('/recent', async (req, res, next) => {
@@ -279,113 +284,129 @@ router.get('/popular/age', async (req, res, next) => {
    }
 })
 
-router.put('/:itemId', authorize(ROLE.SELLER), upload.array('img'), async (req, res, next) => {
-   const transaction = await sequelize.transaction()
-   try {
-      const { itemId } = req.params
-      const item = await Item.findByPk(itemId)
-      if (!item) {
-         console.error(error)
-         await transaction.rollback()
-         const error = new Error('상품을 찾을 수 없습니다.')
-         error.status = 404
-         throw error
-      }
-      const { name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg } = req.body
+//상품 수정 (item 수정/ item_option 수정/ item_img수정/ hashtag 수정)
+/*
+name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg, imgs, img 데이터가 담겨와야 합니다.
+options는 option 객체({name,price,rep_item_yn})가 담겨있는 배열, 
+hashtags는 hashtag가 담겨있는 배열, 
+deleteImg는 삭제할 이미지의 아이디가 담겨있는 배열 입니다.
+*/
+router.put(
+   '/:itemId',
+   authorize(ROLE.SELLER),
+   upload.fields([
+      { name: 'imgs', maxCount: 4 }, // imgs는 여러개 가능
+      { name: 'img', maxCount: 1 }, // img는 1개만
+      { name: 'rep_img', maxCount: 1 },
+   ]),
+   async (req, res, next) => {
+      const transaction = await sequelize.transaction()
+      try {
+         const { itemId } = req.params
+         const item = await Item.findByPk(itemId)
+         if (!item) {
+            console.error(error)
+            await transaction.rollback()
+            const error = new Error('상품을 찾을 수 없습니다.')
+            error.status = 404
+            throw error
+         }
+         const { name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg } = req.body
 
-      await item.update(
-         {
-            name,
-            price,
-            stock_number,
-            description,
-            status,
-            is_sale,
-            sale,
-         },
-         { transaction }
-      )
-
-      //아이템 옵션 지우기
-      await ItemOption.destroy({ where: { item_id: itemId }, transaction })
-      //아이템 옵션 새로생성
-      const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
-      await Promise.all(
-         parsedOptions.map((option) => {
-            return ItemOption.create(
-               {
-                  item_id: item.id,
-                  name: option.name,
-                  price: option.price,
-                  rep_item_yn: option.rep_item_yn || false,
-               },
-               { transaction }
-            )
-         })
-      )
-
-      //해시태그 연결 해제
-      await item.setHashtags([], { transaction })
-
-      //새로 해시태그 설정
-      const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
-
-      if (parsedHashtags) {
-         const hashtagInstances = await Promise.all(
-            parsedHashtags.map((hashtag) => {
-               return Hashtag.findOrCreate({
-                  where: { content: hashtag },
-                  transaction,
-               }).then(([instance]) => instance)
-            }),
+         await item.update(
+            {
+               name,
+               price,
+               stock_number,
+               description,
+               status,
+               is_sale,
+               sale,
+            },
             { transaction }
          )
-         await item.addHashtags(hashtagInstances, { transaction })
-      }
 
-      const parsedDeleteImg = typeof deleteImg === 'string' ? JSON.parse(deleteImg) : deleteImg
-
-      // 기존 이미지 중 지울 이미지만 db에서 제거한 뒤 이미지 파일도 제거
-      if (deleteImg && deleteImg.length > 0) {
+         //아이템 옵션 지우기
+         await ItemOption.destroy({ where: { item_id: itemId }, transaction })
+         //아이템 옵션 새로생성
+         const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
          await Promise.all(
-            parsedDeleteImg.map(async (img_id) => {
-               const img = await ItemImg.findByPk(img_id)
-               if (img) {
-                  ItemImg.destroy({ where: { id: img_id }, transaction })
-                  const filePath = path.join(__dirname, '../..', img.img_url)
-                  if (fs.existsSync(filePath)) {
-                     fs.unlinkSync(filePath)
-                  }
-               }
+            parsedOptions.map((option) => {
+               return ItemOption.create(
+                  {
+                     item_id: item.id,
+                     name: option.name,
+                     price: option.price,
+                     rep_item_yn: option.rep_item_yn || false,
+                  },
+                  { transaction }
+               )
             })
          )
-      }
-      //새로 넣은 이미지 추가
-      await Promise.all(
-         req.files.map((file) =>
-            ItemImg.create(
-               {
-                  item_id: item.id,
-                  img_url: file.location || `/uploads/item/${file.filename}`,
-               },
+
+         //해시태그 연결 해제
+         await item.setHashtags([], { transaction })
+
+         //새로 해시태그 설정
+         const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
+
+         if (parsedHashtags) {
+            const hashtagInstances = await Promise.all(
+               parsedHashtags.map((hashtag) => {
+                  return Hashtag.findOrCreate({
+                     where: { content: hashtag },
+                     transaction,
+                  }).then(([instance]) => instance)
+               }),
                { transaction }
             )
-         )
-      )
+            await item.addHashtags(hashtagInstances, { transaction })
+         }
 
-      await transaction.commit()
-      res.status(200).json({
-         success: true,
-         message: '성공적으로 상품 수정이 완료되었습니다.',
-      })
-   } catch (error) {
-      console.log(error)
-      await transaction.rollback()
-      error.status = error.status || 500
-      error.message = error.message || '상품 수정중 오류 발생'
-      next(error)
+         const parsedDeleteImg = typeof deleteImg === 'string' ? JSON.parse(deleteImg) : deleteImg
+
+         // 기존 이미지 중 지울 이미지만 db에서 제거한 뒤 이미지 파일도 제거
+         if (deleteImg && deleteImg.length > 0) {
+            await Promise.all(
+               parsedDeleteImg.map(async (img_id) => {
+                  const img = await ItemImg.findByPk(img_id)
+                  if (img) {
+                     ItemImg.destroy({ where: { id: img_id }, transaction })
+                     const filePath = path.join(__dirname, '../..', img.img_url)
+                     if (fs.existsSync(filePath)) {
+                        fs.unlinkSync(filePath)
+                     }
+                  }
+               })
+            )
+         }
+         //새로 넣은 이미지 추가
+         await Promise.all(
+            req.files['imgs'].map((file) =>
+               ItemImg.create(
+                  {
+                     item_id: item.id,
+                     img_url: file.location || `/uploads/item/${file.filename}`,
+                  },
+                  { transaction }
+               )
+            )
+         )
+
+         await transaction.commit()
+         res.status(200).json({
+            success: true,
+            message: '성공적으로 상품 수정이 완료되었습니다.',
+         })
+      } catch (error) {
+         console.log(error)
+         await transaction.rollback()
+         error.status = error.status || 500
+         error.message = error.message || '상품 수정중 오류 발생'
+         next(error)
+      }
    }
-})
+)
 
 //상품 삭제
 router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), async (req, res, next) => {
@@ -432,7 +453,7 @@ router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), async (req, res, 
 })
 
 // 단일상품 조회(상품 상제정보)
-router.get('/:itemId', authorize(ROLE.ALL), async (req, res, next) => {
+router.get('/:itemId', async (req, res, next) => {
    try {
       const { itemId } = req.params
       const item = await Item.findByPk(itemId, {
@@ -447,12 +468,68 @@ router.get('/:itemId', authorize(ROLE.ALL), async (req, res, next) => {
             {
                model: ItemOption,
             },
+            {
+               model: Seller,
+               attributes: ['id', 'name'],
+               include: [
+                  {
+                     model: User,
+                     attributes: ['id', 'profile_img'],
+                  },
+               ],
+            },
          ],
       })
+
+      if (!item) {
+         const error = new Error('상품을 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
       res.json({
          item,
          success: true,
          message: '성공적으로 상품 정보를 불러왔습니다.',
+      })
+   } catch (error) {
+      error.status = error.status || 500
+      error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
+   }
+})
+
+// 판매자 기준으로 상품 조회
+router.get('/seller/:sellerId', async (req, res, next) => {
+   try {
+      const { sellerId } = req.params
+      const seller = await Seller.findByPk(sellerId)
+      if (!seller) {
+         const error = new Error('판매자 정보를 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+      const items = await Item.findAll({
+         where: { seller_id: sellerId },
+         limit: 5,
+         include: [
+            {
+               model: ItemImg,
+               where: {
+                  rep_img_yn: true,
+               },
+            },
+         ],
+      })
+      if (!items) {
+         const error = new Error('해당 판매자의 상품을 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+
+      res.status(200).json({
+         success: true,
+         message: '성공적으로 판매자 상품 목록을 불러왔습니다.',
+         items,
       })
    } catch (error) {
       error.status = error.status || 500
