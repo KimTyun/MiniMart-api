@@ -199,13 +199,22 @@ router.get('/', isLoggedIn, async (req, res, next) => {
 router.patch('/edit', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
-      const { name, phone_number, address } = req.body
+      const { name, phone_number, zipcode, address, detailaddress, extraaddress } = req.body
 
       const user = await User.findByPk(userId)
       if (!user) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' })
 
-      await user.update({ name, phone_number, address })
+      // user.update() 호출 시, 새로운 필드들을 업데이트
+      await user.update({
+         name,
+         phone_number,
+         zipcode,
+         address,
+         detailaddress,
+         extraaddress,
+      })
 
+      // 업데이트된 user 객체를 반환
       res.json({ user })
    } catch (error) {
       next(error)

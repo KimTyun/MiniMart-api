@@ -88,6 +88,14 @@ app.use((err, req, res, next) => {
    const statusCode = err.status || 500
    const errorMessage = err.message || '서버 내부 오류'
    if (process.env.NODE_ENV === 'development') {
+      return res.status(statusCode).json({
+         success: false,
+         message: errorMessage,
+         stack: err.stack, // 스택 트레이스 추가
+         error: err,
+      })
+   }
+   if (process.env.NODE_ENV === 'development') {
       console.log(err)
    }
 
