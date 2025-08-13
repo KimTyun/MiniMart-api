@@ -12,6 +12,7 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
+const sellerRouter = require('./routes/auth/seller')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
@@ -26,16 +27,16 @@ initPassport()
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-sequelize
-   .getQueryInterface()
-   .dropAllTables({ cascade: true })
-   .then(() => {
-      return sequelize.sync({ force: true })
-   })
-   .then(() => {
-      console.log('DB 강제 초기화 완료 (외래키 무시)')
-   })
-   .catch(console.error)
+// sequelize
+//    .getQueryInterface()
+//    .dropAllTables({ cascade: true })
+//    .then(() => {
+//       return sequelize.sync({ force: true })
+//    })
+//    .then(() => {
+//       console.log('DB 강제 초기화 완료 (외래키 무시)')
+//    })
+//    .catch(console.error)
 
 // uploads 폴더가 없을 경우 새로 생성
 try {
@@ -68,6 +69,7 @@ app.use(
    passport.initialize(),
    passport.session()
 )
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.get('/', (req, res) => {
    res.send(`
@@ -83,10 +85,19 @@ app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
 app.use('/api/item', itemRouter)
 app.use('/api/item/search', searchRouter)
+app.use('/auth/seller', sellerRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
    const errorMessage = err.message || '서버 내부 오류'
+   if (process.env.NODE_ENV === 'development') {
+      return res.status(statusCode).json({
+         success: false,
+         message: errorMessage,
+         stack: err.stack, // 스택 트레이스 추가
+         error: err,
+      })
+   }
    if (process.env.NODE_ENV === 'development') {
       console.log(err)
    }
