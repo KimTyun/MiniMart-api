@@ -19,6 +19,7 @@ const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
 const filesRouter = require('./routes/bizFile/files')
+const searchRouter = require('./routes/item/search')
 
 const app = express()
 passportConfig()
@@ -69,6 +70,7 @@ app.use(
    passport.initialize(),
    passport.session()
 )
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 app.get('/', (req, res) => {
    res.send(`
@@ -82,6 +84,8 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 app.use('/auth', authRouter)
 app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
+app.use('/api/item', itemRouter)
+app.use('/api/item/search', searchRouter)
 app.use('/auth/seller', sellerRouter)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/files', filesRouter)
@@ -90,6 +94,14 @@ app.use('/admin', require('./routes/auth/admin'))
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
    const errorMessage = err.message || '서버 내부 오류'
+   if (process.env.NODE_ENV === 'development') {
+      return res.status(statusCode).json({
+         success: false,
+         message: errorMessage,
+         stack: err.stack, // 스택 트레이스 추가
+         error: err,
+      })
+   }
    if (process.env.NODE_ENV === 'development') {
       console.log(err)
    }

@@ -76,7 +76,8 @@ exports.getSeller = (req, res) => {
 // 회원가입
 exports.register = async (req, res) => {
    try {
-      const { name, email, address, password, phone_number, age, role = 'BUYER' } = req.body
+      const { name, email, address, zipcode, extraaddress, detailaddress, password, phone_number, age, profile_img, role = 'buyer' } = req.body
+      const defaultProfileImg = '/uploads/profile-images/default.png'
 
       // 이메일 중복 확인
       const existing = await User.findOne({ where: { email } })
@@ -93,10 +94,14 @@ exports.register = async (req, res) => {
          email,
          address,
          password: hash,
+         zipcode,
+         detailaddress,
+         extraaddress,
          age,
          role,
          phone_number,
          provider: 'local',
+         profile_img: defaultProfileImg,
       })
       return res.status(201).json({ message: '회원가입 완료', user })
    } catch (err) {
