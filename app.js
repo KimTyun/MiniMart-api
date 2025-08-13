@@ -12,15 +12,16 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
-const sellerRouter = require('./routes/auth/seller')
 // 라우터 등록
 
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
+const filesRouter = require('./routes/bizFile/files')
 const searchRouter = require('./routes/item/search')
 const followRouter = require('./routes/follow')
 const sellerRouter = require('./routes/seller')
+const qnaRouter = require('./routes/item/qna')
 
 const app = express()
 passportConfig()
@@ -91,6 +92,9 @@ app.use('/auth/seller', sellerRouter)
 app.use('/api/follow', followRouter)
 app.use('/api/seller', sellerRouter)
 app.use('/auth/seller', sellerRouter)
+app.use('/api/qna', qnaRouter)
+app.use('/files', filesRouter)
+app.use('/admin', require('./routes/auth/admin'))
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500

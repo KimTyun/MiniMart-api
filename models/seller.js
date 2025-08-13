@@ -59,6 +59,11 @@ module.exports = class Seller extends Sequelize.Model {
                type: DataTypes.STRING(255),
                allowNull: true,
             },
+            status: {
+               type: DataTypes.ENUM('PENDING', 'APPROVED', 'REJECTED'),
+               allowNull: false,
+               defaultValue: 'PENDING',
+            },
          },
          {
             sequelize,
