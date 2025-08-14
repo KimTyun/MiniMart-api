@@ -11,8 +11,8 @@ const path = require('path')
 const { where } = require('sequelize')
 const { count } = require('console')
 
-console.log('Item model name:', Item?.name, 'table:', Item?.getTableName?.())
-console.log('ItemImg model name:', ItemImg?.name, 'table:', ItemImg?.getTableName?.())
+// console.log('Item model name:', Item?.name, 'table:', Item?.getTableName?.())
+// console.log('ItemImg model name:', ItemImg?.name, 'table:', ItemImg?.getTableName?.())
 
 //upload/item 폴더가 없을 경우 생성
 try {
