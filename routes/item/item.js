@@ -177,7 +177,7 @@ router.get('/recent', async (req, res, next) => {
          ],
          attributes: ['id', 'name', 'price', 'stock_number', 'status', 'createdAt'],
          order: [['createdAt', 'DESC']],
-         limit: 3,
+         limit: 5,
       })
 
       res.json({
@@ -194,7 +194,7 @@ router.get('/recent', async (req, res, next) => {
    }
 })
 
-// 인기 상품 조회(20대, 30대)
+// 인기 상품 조회 나이대별
 router.get('/popular/age', async (req, res, next) => {
    try {
       const topByAge = async (minAge, maxAge, tag) => {
@@ -260,10 +260,13 @@ router.get('/popular/age', async (req, res, next) => {
          }
       }
 
+      const result10s = await topByAge(10, 19, '10s')
       const result20s = await topByAge(20, 29, '20s')
       const result30s = await topByAge(30, 39, '30s')
+      const result40s = await topByAge(40, 49, '40s')
+      const result50s = await topByAge(50, 59, '50s')
 
-      const items = [result20s, result30s].filter(Boolean)
+      const items = [result10s, result20s, result30s, result40s, result50s].filter(Boolean)
 
       res.json({
          success: true,

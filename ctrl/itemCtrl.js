@@ -1,6 +1,7 @@
 // ctrl/itemCtrl.js
 const { Item, ItemImg, Seller } = require('../models')
 
+// 최근 등록된 상품들
 exports.getRecentItems = async (req, res, next) => {
    try {
       const items = await Item.findAll({
@@ -19,7 +20,7 @@ exports.getRecentItems = async (req, res, next) => {
 
          attributes: ['id', 'name', 'price', 'stock_number', 'status', 'createdAt', 'seller_id'],
          order: [['createdAt', 'DESC']],
-         limit: 3,
+         limit: 5,
       })
 
       res.json({
