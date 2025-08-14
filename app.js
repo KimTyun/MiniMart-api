@@ -34,6 +34,7 @@ app.set('PORT', process.env.PORT || 8000)
 //    .getQueryInterface()
 //    .dropAllTables({ cascade: true })
 //    .then(() => {
+//       ;``
 //       return sequelize.sync({ force: true })
 //    })
 //    .then(() => {
