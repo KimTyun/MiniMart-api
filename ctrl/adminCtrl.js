@@ -1,4 +1,4 @@
-const { sequelize, User, Seller } = require('../models')
+const { sequelize, User, Seller, Order, OrderItem } = require('../models')
 const moment = require('moment')
 
 // 판매자 자격 승인
@@ -87,8 +87,26 @@ exports.deleteUser = (req, res) => {
    res.send('사용자 삭제')
 }
 
-exports.getAllOrders = (req, res) => {
-   res.send('주문 전체 목록')
+// 주문 목록 가져오기
+exports.getAllOrders = async (req, res) => {
+   try {
+      const orders = await Order.findAll({
+         include: [
+            {
+               model: OrderItem,
+               attributes: ['createdAt', 'count'],
+            },
+            {
+               model: User,
+               attributes: ['name', 'email', 'address', 'phone_number'],
+            },
+         ],
+      })
+      res.json(orders)
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '주문 목록 조회 실패' })
+   }
 }
 
 exports.editOrderInfo = (req, res) => {
