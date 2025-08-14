@@ -22,6 +22,7 @@ const searchRouter = require('./routes/item/search')
 const followRouter = require('./routes/follow')
 const sellerRouter = require('./routes/seller')
 const qnaRouter = require('./routes/item/qna')
+const orderRouter = require('./routes/order/order')
 
 const app = express()
 passportConfig()
@@ -41,6 +42,7 @@ app.set('PORT', process.env.PORT || 8000)
 //       console.log('DB 강제 초기화 완료 (외래키 무시)')
 //    })
 //    .catch(console.error)
+
 
 // uploads 폴더가 없을 경우 새로 생성
 try {
@@ -96,6 +98,7 @@ app.use('/auth/seller', sellerRouter)
 app.use('/api/qna', qnaRouter)
 app.use('/files', filesRouter)
 app.use('/admin', require('./routes/auth/admin'))
+app.use('/order', orderRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
