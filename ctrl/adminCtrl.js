@@ -1,4 +1,5 @@
 const { sequelize, User, Seller } = require('../models')
+const moment = require('moment')
 
 // 판매자 자격 승인
 exports.approveSeller = async (req, res) => {
@@ -17,8 +18,8 @@ exports.approveSeller = async (req, res) => {
 
       await t.commit()
       res.json({ message: '판매자 승인 완료' })
-   } catch (err) {
-      console.error(err)
+   } catch (error) {
+      console.error(error)
       await t.rollback()
       res.status(500).json({ message: '판매자 승인 실패' })
    }
@@ -31,8 +32,8 @@ exports.getPendingSellers = async (req, res) => {
          include: [{ model: User, attributes: ['id', 'name', 'email'] }],
       })
       res.json(sellers)
-   } catch (err) {
-      console.error(err)
+   } catch (error) {
+      console.error(error)
       res.status(500).json({ message: '승인 대기 목록 조회 실패' })
    }
 }
@@ -43,9 +44,34 @@ exports.rejectSeller = async (req, res) => {
       const sellerId = req.params.id
       await Seller.update({ status: 'REJECTED' }, { where: { id: sellerId } })
       res.json({ message: '판매자 거절 완료' })
-   } catch (err) {
-      console.error(err)
+   } catch (error) {
+      console.error(error)
       res.status(500).json({ message: '판매자 거절 실패' })
+   }
+}
+
+// 고객 통계 월별 가입자
+exports.getMonth = async (req, res) => {
+   try {
+      const startDate = moment({ year: year, month: month - 1, day: 1 })
+         .startOf('day')
+         .toDate()
+      const endDate = moment({ year: year, month: month - 1 })
+         .endOf('month')
+         .endOf('day')
+         .toDate()
+
+      const orders = await User.findAll({
+         where: {
+            createdAt: {
+               [Sequelize.Op.between]: [startDate, endDate],
+            },
+         },
+      })
+      return orders
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '월별 데이터 가져오기 실패' })
    }
 }
 
