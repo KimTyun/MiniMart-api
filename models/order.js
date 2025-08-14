@@ -13,7 +13,7 @@ module.exports = class Order extends Sequelize.Model {
                },
             },
             status: {
-               type: DataTypes.ENUM('PAID', 'SHIPPING', 'DELIVERED'),
+               type: DataTypes.ENUM('PAID', 'SHIPPING', 'DELIVERED', 'CANCELED'),
                allowNull: false,
                defaultValue: 'PAID',
             },

@@ -276,6 +276,86 @@ router.delete('/delete', isLoggedIn, async (req, res) => {
    }
 })
 
+// 주문 취소 API
+/**
+ *paths:
+ *  /orders/{orderId}/cancel:
+ *    patch:
+ *      summary: 주문 취소
+ *      tags:
+ *        - Orders
+ *      operationId: cancelOrder
+ *      description: |
+ *        사용자의 주문을 취소합니다.
+ *        주문의 상태(status)가 'PAID'일 때만 취소가 가능하며,
+ *        주문 상태를 'CANCELED'로 변경합니다.
+ *      security:
+ *        - bearerAuth: []
+ *      parameters:
+ *        - name: orderId
+ *          in: path
+ *          description: 취소할 주문의 고유 ID
+ *          required: true
+ *          schema:
+ *            type: string
+ *            example: 'ORD_20250812_001'
+ *      responses:
+ *        '200':
+ *          description: 주문이 성공적으로 취소됨
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: '주문이 취소되었습니다.'
+ *        '400':
+ *          description: 잘못된 요청 또는 취소할 수 없는 주문 상태
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: '이미 배송이 시작되어 주문을 취소할 수 없습니다.'
+ *        '401':
+ *          description: 인증 실패 (유효하지 않은 토큰)
+ *        '404':
+ *          description: 주문을 찾을 수 없음
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: '주문을 찾을 수 없습니다.'
+ *        '500':
+ *          description: 서버 오류
+ */
+router.patch('/orders/:orderId/cancel', isLoggedIn, async (req, res, next) => {
+   const { orderId } = req.params
+   try {
+      const order = await Order.findByPk(orderId)
+      if (!order) {
+         return res.status(404).json({ message: '해당 주문을 찾을 수 없습니다.' })
+      }
+
+      if (order.status !== 'PAID') {
+         return res.status(400).json({ message: '이미 배송이 시작되어 주문을 취소할 수 없습니다.' })
+      }
+
+      await order.update({ status: 'CANCELED' })
+
+      return res.status(200).json({ message: '주문이 성공적으로 취소되었습니다.' })
+   } catch (error) {
+      console.error('주문 취소 오류:', error)
+      next(error)
+   }
+})
+
 // 판매자를 언팔로우
 router.post('/unfollow/:sellerId', isLoggedIn, async (req, res, next) => {
    try {
