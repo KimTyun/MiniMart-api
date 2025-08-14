@@ -13,7 +13,7 @@ const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
 // 라우터 등록
-
+const { Order } = require('./models')
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
@@ -34,6 +34,7 @@ app.set('PORT', process.env.PORT || 8000)
 //    .getQueryInterface()
 //    .dropAllTables({ cascade: true })
 //    .then(() => {
+//       ;``
 //       return sequelize.sync({ force: true })
 //    })
 //    .then(() => {
