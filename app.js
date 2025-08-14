@@ -21,8 +21,8 @@ const filesRouter = require('./routes/bizFile/files')
 const searchRouter = require('./routes/item/search')
 const followRouter = require('./routes/follow')
 const sellerRouter = require('./routes/seller')
-const qnaRouter = require('./routes/item/qna')
-
+const qnaRouter = require('./routes/qna')
+const cartRouter = require('./routes/cart')
 const app = express()
 passportConfig()
 initPassport()
@@ -95,6 +95,7 @@ app.use('/auth/seller', sellerRouter)
 app.use('/api/qna', qnaRouter)
 app.use('/files', filesRouter)
 app.use('/admin', require('./routes/auth/admin'))
+app.use('/api/cart', cartRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500

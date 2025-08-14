@@ -16,7 +16,6 @@ exports.getFollowingSellers = async (req, res, next) => {
          limit: 5, // 메인 페이지에서는 5개만 보여주도록 제한
       })
 
-      // 프론트엔드에서 사용하기 쉽게 데이터 형태를 가공합니다.
       const sellers = followingList.map((f) => f.Seller)
 
       res.status(200).json({

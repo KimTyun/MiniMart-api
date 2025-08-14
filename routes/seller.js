@@ -1,6 +1,3 @@
-// =================================================================
-
-// 파일 4: /routes/seller.js 파일을 새로 만듭니다.
 const express = require('express')
 const router = express.Router()
 const sellerCtrl = require('../ctrl/sellerCtrl')
