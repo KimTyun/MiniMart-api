@@ -68,11 +68,6 @@ exports.registerSeller = async (req, res) => {
    }
 }
 
-// 판매자 자격 신청
-exports.getSeller = (req, res) => {
-   res.send('판매자 자격 신청')
-}
-
 // 회원가입
 exports.register = async (req, res) => {
    try {
@@ -143,7 +138,7 @@ exports.login = (req, res, next) => {
                role: user.role,
             },
             SECRET,
-            { expiresIn: '1h' }
+            { expiresIn: '30d' }
          )
          return res.status(200).json({
             success: true,

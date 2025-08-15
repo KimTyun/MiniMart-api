@@ -13,7 +13,7 @@ const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
 // 라우터 등록
-
+const { Order } = require('./models')
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
@@ -23,6 +23,8 @@ const followRouter = require('./routes/follow')
 const sellerRouter = require('./routes/seller')
 const qnaRouter = require('./routes/qna')
 const cartRouter = require('./routes/cart')
+const orderRouter = require('./routes/order/order')
+
 const app = express()
 passportConfig()
 initPassport()
@@ -34,12 +36,14 @@ app.set('PORT', process.env.PORT || 8000)
 //    .getQueryInterface()
 //    .dropAllTables({ cascade: true })
 //    .then(() => {
+//       ;``
 //       return sequelize.sync({ force: true })
 //    })
 //    .then(() => {
 //       console.log('DB 강제 초기화 완료 (외래키 무시)')
 //    })
 //    .catch(console.error)
+
 
 // uploads 폴더가 없을 경우 새로 생성
 try {
@@ -96,6 +100,7 @@ app.use('/api/qna', qnaRouter)
 app.use('/files', filesRouter)
 app.use('/admin', require('./routes/auth/admin'))
 app.use('/api/cart', cartRouter)
+app.use('/order', orderRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500

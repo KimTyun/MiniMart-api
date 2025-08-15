@@ -32,10 +32,14 @@ module.exports = class Cart extends Sequelize.Model {
          onDelete: 'CASCADE',
       })
       Cart.belongsToMany(db.Item, {
-         through: 'cart_item',
-         foreignKey: 'user_id',
-         otherKey: 'item_id',
+         through: db.CartItem,
+         foreignKey: 'user_id', // cart_item 테이블에서 Cart FK
+         otherKey: 'item_id', // cart_item 테이블에서 Item FK
          onDelete: 'CASCADE',
+      })
+      Cart.hasMany(db.CartItem, {
+         foreignKey: 'user_id',
+         sourceKey: 'user_id',
       })
    }
 }
