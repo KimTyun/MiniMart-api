@@ -1,6 +1,3 @@
-// =================================================================
-
-// 파일 3: /routes/follow.js 파일을 새로 만듭니다.
 const express = require('express')
 const router = express.Router()
 const { isLoggedIn } = require('../middlewares/middlewares')
