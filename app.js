@@ -43,7 +43,6 @@ app.set('PORT', process.env.PORT || 8000)
 //    })
 //    .catch(console.error)
 
-
 // uploads 폴더가 없을 경우 새로 생성
 try {
    fs.readdirSync('uploads') //해당 폴더가 있는지 확인
