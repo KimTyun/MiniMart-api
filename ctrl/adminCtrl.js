@@ -1,4 +1,5 @@
 const { sequelize, User, Seller, Order, OrderItem } = require("../models");
+const { Sequelize } = require("sequelize");
 const moment = require("moment");
 
 // 판매자 자격 승인
@@ -56,23 +57,56 @@ exports.rejectSeller = async (req, res) => {
 // 고객 통계 월별 가입자
 exports.getMonth = async (req, res) => {
   try {
+    console.log("쿼리 파라미터:", req.query);
     const { year, month } = req.query;
-    const startDate = moment({ year: year, month: month - 1, day: 1 })
+
+    const yearNum = parseInt(year, 10);
+    const monthNum = parseInt(month, 10);
+
+    if (isNaN(yearNum) || isNaN(monthNum)) {
+      return res
+        .status(400)
+        .json({ message: "올바른 year, month 값을 입력하세요." });
+    }
+
+    const startDate = moment({ year: yearNum, month: monthNum - 1, day: 1 })
       .startOf("day")
       .toDate();
-    const endDate = moment({ year: year, month: month - 1 })
+
+    const endDate = moment({ year: yearNum, month: monthNum - 1 })
       .endOf("month")
       .endOf("day")
       .toDate();
 
-    const orders = await User.findAll({
+    const users = await User.findAll({
       where: {
         createdAt: {
           [Sequelize.Op.between]: [startDate, endDate],
         },
       },
+      attributes: ["id", "age"],
     });
-    res.json(orders);
+
+    const ageGroups = { 10: 0, 20: 0, 30: 0, 40: 0, 50: 0, "60+": 0 };
+
+    users.forEach((user) => {
+      if (!user.age) return;
+      const age = parseInt(user.age, 10);
+
+      if (age < 20) ageGroups["10"]++;
+      else if (age < 30) ageGroups["20"]++;
+      else if (age < 40) ageGroups["30"]++;
+      else if (age < 50) ageGroups["40"]++;
+      else if (age < 60) ageGroups["50"]++;
+      else ageGroups["60+"]++;
+    });
+
+    const result = Object.keys(ageGroups).map((key) => ({
+      name: `${key}대`,
+      value: ageGroups[key],
+    }));
+
+    res.json(result);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "월별 데이터 가져오기 실패" });
