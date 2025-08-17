@@ -78,7 +78,7 @@ router.post(
                sale: Number(sale) || 0,
                seller_id: null /*req?.user?.id */, //완성 후 수정 필요(seller아이디 없을 시 에러)
             },
-            { transaction }
+            { transaction },
          )
 
          const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
@@ -93,9 +93,9 @@ router.post(
                      price: option.price,
                      rep_item_yn: index === 0,
                   },
-                  { transaction }
+                  { transaction },
                )
-            })
+            }),
          )
 
          // 아이템 이미지도 db에 추가
@@ -106,9 +106,9 @@ router.post(
                      item_id: newItem.id,
                      img_url: file.location || `/uploads/item/${file.filename}`,
                   },
-                  { transaction }
-               )
-            )
+                  { transaction },
+               ),
+            ),
          )
          //상세설정 이미지 따로 추가
          await ItemImg.create(
@@ -117,7 +117,7 @@ router.post(
                img_url: req.files['img'][0].location || `/uploads/item/${req.files['img'][0].filename}`,
                details_img_yn: true,
             },
-            { transaction }
+            { transaction },
          )
          //대표 이미지도 따로 추가
          await ItemImg.create(
@@ -126,7 +126,7 @@ router.post(
                img_url: req.files['rep_img'][0].location || `/uploads/item/${req.files['rep_img'][0].filename}`,
                rep_img_yn: true,
             },
-            { transaction }
+            { transaction },
          )
 
          const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
@@ -139,7 +139,7 @@ router.post(
                      where: { content: hashtag },
                      transaction,
                   }).then(([instance]) => instance)
-               })
+               }),
             )
             await newItem.addHashtags(hashtagInstances, { transaction })
          }
@@ -161,7 +161,7 @@ router.post(
          error.message = error.message || '상품 등록 중 문제 발생'
          next(error)
       }
-   }
+   },
 )
 
 // 최근 상품 조회
@@ -326,7 +326,7 @@ router.put(
                is_sale,
                sale,
             },
-            { transaction }
+            { transaction },
          )
 
          //아이템 옵션 지우기
@@ -342,9 +342,9 @@ router.put(
                      price: option.price,
                      rep_item_yn: option.rep_item_yn || false,
                   },
-                  { transaction }
+                  { transaction },
                )
-            })
+            }),
          )
 
          //해시태그 연결 해제
@@ -361,7 +361,7 @@ router.put(
                      transaction,
                   }).then(([instance]) => instance)
                }),
-               { transaction }
+               { transaction },
             )
             await item.addHashtags(hashtagInstances, { transaction })
          }
@@ -380,7 +380,7 @@ router.put(
                         fs.unlinkSync(filePath)
                      }
                   }
-               })
+               }),
             )
          }
          //새로 넣은 이미지 추가
@@ -391,9 +391,9 @@ router.put(
                      item_id: item.id,
                      img_url: file.location || `/uploads/item/${file.filename}`,
                   },
-                  { transaction }
-               )
-            )
+                  { transaction },
+               ),
+            ),
          )
 
          await transaction.commit()
@@ -408,7 +408,7 @@ router.put(
          error.message = error.message || '상품 수정중 오류 발생'
          next(error)
       }
-   }
+   },
 )
 
 //상품 삭제

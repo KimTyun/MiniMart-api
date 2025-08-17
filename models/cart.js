@@ -21,7 +21,7 @@ module.exports = class Cart extends Sequelize.Model {
             paranoid: false,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',
-         }
+         },
       )
    }
 
@@ -31,12 +31,7 @@ module.exports = class Cart extends Sequelize.Model {
          targetKey: 'id',
          onDelete: 'CASCADE',
       })
-      Cart.belongsToMany(db.Item, {
-         through: db.CartItem,
-         foreignKey: 'user_id', // cart_item 테이블에서 Cart FK
-         otherKey: 'item_id', // cart_item 테이블에서 Item FK
-         onDelete: 'CASCADE',
-      })
+
       Cart.hasMany(db.CartItem, {
          foreignKey: 'user_id',
          sourceKey: 'user_id',
