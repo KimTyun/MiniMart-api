@@ -1,4 +1,6 @@
 const { sequelize, User, Seller, Order, OrderItem, QnaBoard, QnaBoardImg } = require('../models')
+const { Op } = require('sequelize')
+
 const moment = require('moment')
 
 // 판매자 자격 승인
@@ -50,28 +52,48 @@ exports.rejectSeller = async (req, res) => {
    }
 }
 
-// 고객 통계 월별 가입자
-exports.getMonth = async (req, res) => {
+// 고객 나이별 가입자 (올해)
+exports.getYear = async (req, res) => {
    try {
-      const startDate = moment({ year: year, month: month - 1, day: 1 })
-         .startOf('day')
-         .toDate()
-      const endDate = moment({ year: year, month: month - 1 })
-         .endOf('month')
-         .endOf('day')
-         .toDate()
+      const yearNum = new Date().getFullYear()
 
-      const orders = await User.findAll({
+      // 1월 1일 ~ 12월 31일 범위
+      const startDate = moment({ year: yearNum, month: 0, day: 1 }).startOf('day').toDate()
+      const endDate = moment({ year: yearNum, month: 11, day: 31 }).endOf('day').toDate()
+
+      // 해당 연도 가입자 조회
+      const users = await User.findAll({
          where: {
             createdAt: {
-               [Sequelize.Op.between]: [startDate, endDate],
+               [Op.between]: [startDate, endDate],
             },
          },
+         attributes: ['id', 'age'],
       })
-      return orders
+
+      const ageGroups = { 10: 0, 20: 0, 30: 0, 40: 0, 50: 0, '60+': 0 }
+
+      users.forEach((user) => {
+         const age = parseInt(user.age, 10)
+
+         if (!Number.isInteger(age) || age <= 0 || age > 120) return
+
+         if (age < 20) ageGroups['10']++
+         else if (age < 30) ageGroups['20']++
+         else if (age < 40) ageGroups['30']++
+         else if (age < 50) ageGroups['40']++
+         else if (age < 60) ageGroups['50']++
+         else ageGroups['60+']++
+      })
+      const result = Object.keys(ageGroups).map((key) => ({
+         name: `${key}대`,
+         value: ageGroups[key],
+      }))
+
+      res.json(result)
    } catch (error) {
       console.error(error)
-      res.status(500).json({ message: '월별 데이터 가져오기 실패' })
+      res.status(500).json({ message: '나이별 데이터 가져오기 실패' })
    }
 }
 
@@ -113,8 +135,31 @@ exports.editOrderInfo = (req, res) => {
    res.send('주문 수정(관리자)')
 }
 
-exports.deleteOrder = (req, res) => {
-   res.send('주문 삭제(관리자)')
+// 주문 삭제
+exports.deleteOrder = async (req, res) => {
+   try {
+      const id = req.params.id
+
+      const order = await Order.findByPk(id)
+      console.log('order = ', order)
+      console.log('id = ', id)
+
+      if (!order) {
+         const error = new Error('주문을 찾을 수 없습니다.')
+         error.status = 404
+         console.error(error)
+      }
+
+      await order.destroy({ force: true })
+
+      res.json({
+         success: true,
+         message: '주문이 성공적으로 취소되었습니다.',
+      })
+   } catch (error) {
+      console.error(error)
+      res.status(500).json({ message: '상품 삭제 실패' })
+   }
 }
 
 // 모든 Q&A 목록 가져오기

@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt')
 const router = express.Router()
 const { isLoggedIn } = require('../../middlewares/middlewares')
 const User = require('../../models/user') // 경로 확인
+const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL
 
 // 1. 카카오 로그인 URL 생성
 router.get('/', (req, res) => {
@@ -85,10 +86,12 @@ router.get('/callback', async (req, res) => {
          profile_img: user.profile_img,
          role: user.role,
       }
-      const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' })
+      const jwtToken = jwt.sign(payload, process.env.JWT_SECRET, {
+         expiresIn: '1h',
+      })
 
       // 6. 프론트로 전달
-      res.redirect(`http://localhost:5173/login/success?token=${jwtToken}`)
+      res.redirect(`${FRONTEND_APP_URL}/login/success?token=${jwtToken}`)
    } catch (err) {
       console.error('카카오 로그인 에러:', err)
       res.status(500).json({ error: '카카오 로그인 실패', detail: err.message })
