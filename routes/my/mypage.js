@@ -6,7 +6,7 @@ const path = require('path')
 const fs = require('fs')
 const router = express.Router()
 require('dotenv').config()
-const { User, Order, Follow, Item, ItemImg, Seller, OrderItem } = require('../../models')
+const { User, Order, Follow, Item, ItemImg, Seller, OrderItem, ItemReview } = require('../../models')
 const { ROLE } = require('../../constants/role')
 
 // mypage.js는 내 정보 페이지의 구매내역 및 팔로우 한 판매자 표시, 내 정보 수정, 회원 탈퇴 등을 담당합니다.
@@ -418,41 +418,40 @@ router.get('/seller', authorize(ROLE.SELLER), async (req, res, next) => {
 router.post('/review', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
-      const { orderId, rating, content, sellerId } = req.body
+      const { orderId, productId, content } = req.body
 
-      // 필수 데이터 유효성 검사 (이미지 관련 내용 제거)
-      if (!orderId || rating === undefined || !content || !sellerId) {
-         return res.status(400).json({ message: '주문 ID, 별점, 리뷰 내용, 판매자 ID를 모두 입력해주세요.' })
+      // 필수 데이터 체크
+      if (!orderId || !productId || !content) {
+         return res.status(400).json({ message: '필수 데이터가 누락되었습니다.' })
       }
 
-      // 해당 주문이 존재하고, 현재 로그인된 사용자의 주문인지 확인
-      const order = await Order.findOne({
-         where: { id: orderId, buyer_id: userId },
-      })
-
+      // 주문 소유권 확인
+      const order = await Order.findOne({ where: { id: orderId, buyer_id: userId } })
       if (!order) {
-         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나, 리뷰 작성 권한이 없습니다.' })
+         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나 권한이 없습니다.' })
       }
 
-      // 이미 리뷰를 작성했는지 확인 (복합 키를 사용하여 확인)
+      // 리뷰 중복 확인
       const existingReview = await ItemReview.findOne({
-         where: { buyer_id: userId, seller_id: sellerId },
+         where: { buyer_id: userId, productId: productId },
       })
       if (existingReview) {
-         return res.status(400).json({ message: '이미 해당 판매자에 대한 리뷰를 작성했습니다.' })
+         return res.status(400).json({ message: '이미 해당 상품에 리뷰를 작성했습니다.' })
       }
 
-      // 리뷰를 DB에 저장 (이미지 속성 제거)
+      // 리뷰 저장
       const newReview = await ItemReview.create({
          buyer_id: userId,
-         seller_id: sellerId,
-         rating,
+         productId,
          content,
       })
 
-      res.status(201).json({
+      await Order.update({ hasReview: true }, { where: { id: orderId } })
+
+      return res.status(201).json({
          message: '리뷰가 성공적으로 등록되었습니다.',
          review: newReview,
+         orderId: orderId,
       })
    } catch (error) {
       console.error('리뷰 등록 오류:', error)
