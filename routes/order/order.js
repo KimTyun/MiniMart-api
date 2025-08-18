@@ -41,7 +41,7 @@ router.post('/', async (req, res, next) => {
             password: hash,
             is_user: buyer === 'guest' ? false : true,
          },
-         { transaction },
+         { transaction }
       )
 
       await Promise.all(
@@ -53,9 +53,9 @@ router.post('/', async (req, res, next) => {
                   order_id: order.id,
                   count: item.count,
                },
-               { transaction },
-            ),
-         ),
+               { transaction }
+            )
+         )
       )
       // 회원의 경우 db의 장바구니 제거(비회원은 react에서 localstoragy 제어)
       if (buyer !== 'guest') {
@@ -81,9 +81,9 @@ router.post('/', async (req, res, next) => {
                {
                   stock_number: updateItem.stock_number - item.count,
                },
-               { transaction },
+               { transaction }
             )
-         }),
+         })
       )
 
       await transaction.commit()
@@ -216,14 +216,14 @@ router.get('/cart', authorize(ROLE.ALL), async (req, res, next) => {
       })
 
       if (!cart) {
-         res.status(404).json({
+         return res.status(404).json({
             success: false,
             message: '장바구니 없음',
             cart: null,
          })
       }
 
-      res.json({
+      return res.json({
          success: true,
          message: '장바구니 불러오기 완료',
          cart,
@@ -295,9 +295,9 @@ router.delete('/:id', async (req, res, next) => {
                {
                   stock_number: item.stock_number + orderItem.count,
                },
-               { transaction },
+               { transaction }
             )
-         }),
+         })
       )
       await order.destroy({ transaction })
 
