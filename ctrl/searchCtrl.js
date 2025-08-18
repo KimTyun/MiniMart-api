@@ -10,20 +10,13 @@ exports.searchItems = async (req, res, next) => {
 
       const whereClause = {}
       let orderClause = []
-
       if (keyword) {
-         const keywords = keyword.split(' ').filter((k) => k.trim() !== '')
-         if (keywords.length > 0) {
-            whereClause[Op.and] = keywords.map((term) => ({
-               [Op.or]: [{ name: { [Op.like]: `%${term}%` } }, { description: { [Op.like]: `%${term}%` } }],
-            }))
-         }
+         whereClause[Op.or] = [{ name: { [Op.like]: `%${keyword}%` } }, { description: { [Op.like]: `%${keyword}%` } }]
       }
 
       if (category) {
          whereClause.category = category
       }
-
       if (minPrice && maxPrice) {
          whereClause.price = { [Op.between]: [minPrice, maxPrice] }
       } else if (minPrice) {
@@ -39,14 +32,12 @@ exports.searchItems = async (req, res, next) => {
          case 'price_desc':
             orderClause.push(['price', 'DESC'])
             break
-         case 'popular':
-            orderClause.push(['createdAt', 'DESC'])
-            break
-         case 'newest':
          default:
             orderClause.push(['createdAt', 'DESC'])
             break
       }
+
+      console.log('🔍 최종 검색 조건:', JSON.stringify(whereClause, null, 2))
 
       const { count, rows } = await Item.findAndCountAll({
          where: whereClause,
@@ -55,15 +46,8 @@ exports.searchItems = async (req, res, next) => {
          offset: offset,
          distinct: true,
          include: [
-            {
-               model: ItemImg,
-               where: { rep_img_yn: true },
-               required: false,
-            },
-            {
-               model: Seller,
-               attributes: ['id', 'name'],
-            },
+            { model: ItemImg, where: { rep_img_yn: true }, required: false },
+            { model: Seller, attributes: ['id', 'name'] },
          ],
       })
 
@@ -79,8 +63,6 @@ exports.searchItems = async (req, res, next) => {
       })
    } catch (error) {
       console.error('상품 검색 컨트롤러 오류:', error)
-      error.status = 500
-      error.message = '상품을 검색하는 중 오류가 발생했습니다.'
       next(error)
    }
 }

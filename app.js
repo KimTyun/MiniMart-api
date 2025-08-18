@@ -86,19 +86,16 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec))
 
 // 라우터 연결
 app.use('/auth', authRouter)
-app.use('/item', itemRouter)
 app.use('/mypage', mypageRouter)
-app.use('/api/item', itemRouter)
-app.use('/api/item/search', searchRouter)
-app.use('/auth/seller', sellerRouter)
 app.use('/api/follow', followRouter)
 app.use('/api/seller', sellerRouter)
-app.use('/auth/seller', sellerRouter)
 app.use('/api/qna', qnaRouter)
 app.use('/files', filesRouter)
 app.use('/admin', require('./routes/auth/admin'))
 app.use('/api/cart', cartRouter)
 app.use('/order', orderRouter)
+app.use('/api/item/search', searchRouter)
+app.use('/item', itemRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
