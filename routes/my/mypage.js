@@ -414,4 +414,50 @@ router.get('/seller', authorize(ROLE.SELLER), async (req, res, next) => {
    }
 })
 
+// 리뷰 작성
+router.post('/review', isLoggedIn, async (req, res, next) => {
+   try {
+      const userId = req.user.id
+      const { orderId, rating, content, sellerId } = req.body
+
+      // 필수 데이터 유효성 검사 (이미지 관련 내용 제거)
+      if (!orderId || rating === undefined || !content || !sellerId) {
+         return res.status(400).json({ message: '주문 ID, 별점, 리뷰 내용, 판매자 ID를 모두 입력해주세요.' })
+      }
+
+      // 해당 주문이 존재하고, 현재 로그인된 사용자의 주문인지 확인
+      const order = await Order.findOne({
+         where: { id: orderId, buyer_id: userId },
+      })
+
+      if (!order) {
+         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나, 리뷰 작성 권한이 없습니다.' })
+      }
+
+      // 이미 리뷰를 작성했는지 확인 (복합 키를 사용하여 확인)
+      const existingReview = await ItemReview.findOne({
+         where: { buyer_id: userId, seller_id: sellerId },
+      })
+      if (existingReview) {
+         return res.status(400).json({ message: '이미 해당 판매자에 대한 리뷰를 작성했습니다.' })
+      }
+
+      // 리뷰를 DB에 저장 (이미지 속성 제거)
+      const newReview = await ItemReview.create({
+         buyer_id: userId,
+         seller_id: sellerId,
+         rating,
+         content,
+      })
+
+      res.status(201).json({
+         message: '리뷰가 성공적으로 등록되었습니다.',
+         review: newReview,
+      })
+   } catch (error) {
+      console.error('리뷰 등록 오류:', error)
+      next(error)
+   }
+})
+
 module.exports = router
