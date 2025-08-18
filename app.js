@@ -97,6 +97,8 @@ app.use('/order', orderRouter)
 app.use('/api/item/search', searchRouter)
 app.use('/item', itemRouter)
 
+app.use('/api/follow', followRouter)
+
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
    const errorMessage = err.message || '서버 내부 오류'

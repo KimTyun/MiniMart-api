@@ -5,13 +5,11 @@ const fs = require('fs')
 const multer = require('multer')
 const { QnaBoard, QnaBoardImg } = require('../../models')
 
-// 업로드 폴더 없으면 생성
 const uploadPath = path.join(__dirname, '../uploads/qna-images')
 if (!fs.existsSync(uploadPath)) {
    fs.mkdirSync(uploadPath, { recursive: true })
 }
 
-// multer 설정
 const storage = multer.diskStorage({
    destination: (req, file, cb) => {
       cb(null, uploadPath)

@@ -1,16 +1,15 @@
 const { Item, ItemImg } = require('../models')
 
-// 특정 판매자의 모든 상품 조회
 exports.getItemsBySeller = async (req, res, next) => {
    try {
-      const { sellerId } = req.params // URL에서 sellerId를 추출
+      const { sellerId } = req.params
 
       const items = await Item.findAll({
          where: { seller_id: sellerId },
          include: [
             {
                model: ItemImg,
-               where: { rep_img_yn: true }, // 대표 이미지만 포함
+               where: { rep_img_yn: true },
                required: false,
             },
          ],

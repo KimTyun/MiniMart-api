@@ -1,9 +1,15 @@
 const express = require('express')
 const router = express.Router()
-const { isLoggedIn } = require('../middlewares/middlewares')
+const { isLoggedIn } = require('../middlewares/middlewares') // 로그인 검사
 const followCtrl = require('../ctrl/followCtrl')
 
-// GET /api/follow/sellers - 내가 팔로우하는 판매자 목록 조회
-router.get('/sellers', isLoggedIn, followCtrl.getFollowingSellers)
+// POST /api/follow/seller/:sellerId - 판매자 팔로우
+router.post('/seller/:sellerId', isLoggedIn, followCtrl.followSeller)
+
+// DELETE /api/follow/seller/:sellerId - 판매자 언팔로우
+router.delete('/seller/:sellerId', isLoggedIn, followCtrl.unfollowSeller)
+
+// GET /api/follow/home - 홈 화면에 보여줄 내 팔로잉 목록
+router.get('/home', isLoggedIn, followCtrl.getFollowingSellersForHome)
 
 module.exports = router

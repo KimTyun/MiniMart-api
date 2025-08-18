@@ -1,4 +1,3 @@
-// middlewares/middlewares.js
 const jwt = require('jsonwebtoken')
 const SECRET = process.env.JWT_SECRET || 'minimart-secret-key'
 const { ROLE, ROLE_MAP } = require('../constants/role')

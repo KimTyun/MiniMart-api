@@ -9,13 +9,11 @@ const upload = require('../middlewares/upload')
 const { authorize } = require('../middlewares/middlewares')
 const { ROLE } = require('../constants/role')
 
-// 업로드 폴더 없으면 생성
 const uploadPath = path.join(__dirname, '../uploads/qna-images')
 if (!fs.existsSync(uploadPath)) {
    fs.mkdirSync(uploadPath, { recursive: true })
 }
 
-// multer 설정
 const storage = multer.diskStorage({
    destination: (req, file, cb) => {
       cb(null, uploadPath)
