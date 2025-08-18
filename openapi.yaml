@@ -693,37 +693,6 @@
     # ===============================================
 # == 판매자 관련 API
 # ===============================================
-/**
- * @swagger
- * /mypage/requestseller:
- *   post:
- *     summary: 판매자 자격 신청
- *     tags: [User, Seller]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               storeName:
- *                 type: string
- *                 description: "사용할 스토어(상점) 이름"
- *               contactNumber:
- *                 type: string
- *                 description: "연락 가능한 전화번호"
- *     responses:
- *       201:
- *         description: 판매자 자격 신청 성공 (처리 대기중)
- *       401:
- *         description: 로그인이 필요합니다
- *       409:
- *         description: 이미 판매자이거나 신청 처리중입니다
- *       500:
- *         description: 서버 에러
- */
  /**
  * @swagger
  * /users/me:

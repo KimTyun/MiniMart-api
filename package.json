@@ -31,11 +31,13 @@
       "passport-local": "^1.0.0",
       "react-daum-postcode": "^3.2.0",
       "readdirp": "^4.1.2",
+      "recharts": "^3.1.2",
       "sequelize": "^6.37.7",
       "slick-carousel": "^1.8.1",
       "socket.io": "^4.8.1",
       "swagger-jsdoc": "^6.2.8",
-      "swagger-ui-express": "^5.0.1"
+      "swagger-ui-express": "^5.0.1",
+      "swiper": "^11.2.10"
    },
    "devDependencies": {
       "nodemon": "^3.1.10"

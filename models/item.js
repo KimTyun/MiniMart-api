@@ -29,8 +29,8 @@ module.exports = class Item extends Sequelize.Model {
                allowNull: false,
                defaultValue: false,
             },
-            sale_per: {
-               type: DataTypes.FLOAT,
+            sale: {
+               type: DataTypes.INTEGER,
                allowNull: true,
             },
          },
@@ -43,7 +43,7 @@ module.exports = class Item extends Sequelize.Model {
             paranoid: true,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',
-         }
+         },
       )
    }
 
@@ -68,6 +68,11 @@ module.exports = class Item extends Sequelize.Model {
          through: 'item_hashtag',
          foreignKey: 'item_id',
          otherKey: 'hashtag_id',
+         onDelete: 'CASCADE',
+      })
+      Item.hasMany(db.CartItem, {
+         foreignKey: 'item_id',
+         sourceKey: 'id',
          onDelete: 'CASCADE',
       })
    }

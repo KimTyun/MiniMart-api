@@ -37,7 +37,6 @@ router.get('/callback', passport.authenticate('google', { failureRedirect: `${pr
    console.log('[passport] 구글 로그인 성공, 사용자:', req.user)
    res.redirect(`${process.env.FRONTEND_APP_URL}/login/success/google`)
 })
-module.exports = router
 
 router.post('/setcookie', (req, res, next) => {
    try {
@@ -63,3 +62,5 @@ router.get('/checkcookie', (req, res) => {
       return res.json({ expired: false, message: '쿠키있음' })
    }
 })
+
+module.exports = router

@@ -47,7 +47,7 @@ exports.requireRoles = (requiredRolesBitmask) => {
    }
 }
 
-// ✅ 과거 이름들 호환
+// 과거 이름들 호환
 exports.verifyToken = [exports.attachUser, exports.requireAuth]
 exports.isLoggedIn = [exports.attachUser, exports.requireAuth]
 exports.isSeller = [exports.attachUser, exports.requireAuth, exports.requireRoles(ROLE.SELLER)]

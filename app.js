@@ -12,14 +12,18 @@ const swaggerSpec = require('./swagger')
 const passport = require('passport')
 const initPassport = require('./passport/googleStrategy')
 const fs = require('fs')
-const sellerRouter = require('./routes/auth/seller')
 // 라우터 등록
-
+const { Order } = require('./models')
 const authRouter = require('./routes/auth/auth')
 const itemRouter = require('./routes/item/item')
 const mypageRouter = require('./routes/my/mypage')
 const filesRouter = require('./routes/bizFile/files')
 const searchRouter = require('./routes/item/search')
+const followRouter = require('./routes/follow')
+const sellerRouter = require('./routes/seller')
+const qnaRouter = require('./routes/qna')
+const cartRouter = require('./routes/cart')
+const orderRouter = require('./routes/order/order')
 
 const app = express()
 passportConfig()
@@ -32,6 +36,7 @@ app.set('PORT', process.env.PORT || 8000)
 //    .getQueryInterface()
 //    .dropAllTables({ cascade: true })
 //    .then(() => {
+//       ;``
 //       return sequelize.sync({ force: true })
 //    })
 //    .then(() => {
@@ -87,9 +92,14 @@ app.use('/mypage', mypageRouter)
 app.use('/api/item', itemRouter)
 app.use('/api/item/search', searchRouter)
 app.use('/auth/seller', sellerRouter)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
+app.use('/api/follow', followRouter)
+app.use('/api/seller', sellerRouter)
+app.use('/auth/seller', sellerRouter)
+app.use('/api/qna', qnaRouter)
 app.use('/files', filesRouter)
 app.use('/admin', require('./routes/auth/admin'))
+app.use('/api/cart', cartRouter)
+app.use('/order', orderRouter)
 
 app.use((err, req, res, next) => {
    const statusCode = err.status || 500
