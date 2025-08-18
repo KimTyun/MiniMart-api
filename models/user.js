@@ -42,7 +42,7 @@ module.exports = class User extends Sequelize.Model {
                allowNull: true,
             },
             profile_img: {
-               type: DataTypes.STRING(1000),
+               type: DataTypes.TEXT,
                allowNull: true,
             },
             provider: {
