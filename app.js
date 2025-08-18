@@ -32,17 +32,16 @@ initPassport()
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-sequelize
-   .getQueryInterface()
-   .dropAllTables({ cascade: true })
-   .then(() => {
-      ;``
-      return sequelize.sync({ force: true })
-   })
-   .then(() => {
-      console.log('DB 강제 초기화 완료 (외래키 무시)')
-   })
-   .catch(console.error)
+// sequelize
+// .getQueryInterface()
+// .dropAllTables({ cascade: true })
+// .then(() => {
+//    return sequelize.sync({ force: true })
+// })
+// .then(() => {
+//    console.log('DB 강제 초기화 완료 (외래키 무시)')
+// })
+// .catch(console.error)
 
 // uploads 폴더가 없을 경우 새로 생성
 try {
