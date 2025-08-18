@@ -32,7 +32,7 @@ initPassport()
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-sequelize
+// sequelize
 // .getQueryInterface()
 // .dropAllTables({ cascade: true })
 // .then(() => {
