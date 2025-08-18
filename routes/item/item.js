@@ -269,7 +269,7 @@ router.get('/popular/age', async (req, res, next) => {
       const result20s = await topByAge(20, 29, '20s')
       const result30s = await topByAge(30, 39, '30s')
       const result40s = await topByAge(40, 49, '40s')
-      const result50s = await topByAge(50, 59, '50s')
+      const result50s = await topByAge(50, 59, '+50s')
 
       const items = [result10s, result20s, result30s, result40s, result50s].filter(Boolean)
 
