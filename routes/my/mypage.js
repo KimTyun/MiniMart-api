@@ -1,4 +1,4 @@
-const { isLoggedIn } = require('../../middlewares/middlewares')
+const { isLoggedIn, authorize } = require('../../middlewares/middlewares')
 
 const express = require('express')
 const multer = require('multer')
@@ -7,6 +7,7 @@ const fs = require('fs')
 const router = express.Router()
 require('dotenv').config()
 const { User, Order, Follow, Item, ItemImg, Seller, OrderItem } = require('../../models')
+const { ROLE } = require('../../constants/role')
 
 // mypage.js는 내 정보 페이지의 구매내역 및 팔로우 한 판매자 표시, 내 정보 수정, 회원 탈퇴 등을 담당합니다.
 
@@ -387,6 +388,28 @@ router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage')
 
       res.json({ url: fileUrl })
    } catch (error) {
+      next(error)
+   }
+})
+
+// 판매자 내정보 가져오기
+router.get('/seller', authorize(ROLE.SELLER), async (req, res, next) => {
+   try {
+      const seller = await Seller.findByPk(req.user.id)
+
+      if (!seller) {
+         const error = new Error('판매자 정보를 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+      res.json({
+         success: true,
+         message: '판매자 정보 불러옴',
+         seller,
+      })
+   } catch (error) {
+      console.error(error)
+      error.message = error.message || '판매자 정보 불러오는 중 에러발생'
       next(error)
    }
 })

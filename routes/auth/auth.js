@@ -1,6 +1,6 @@
 const express = require('express')
 
-const { isLoggedIn, isAdmin } = require('../../middlewares/middlewares')
+const { isLoggedIn, isAdmin, authorize } = require('../../middlewares/middlewares')
 const authCtrl = require('../../ctrl/authCtrl')
 const adminCtrl = require('../../ctrl/adminCtrl')
 
@@ -11,6 +11,8 @@ const router = express.Router()
 const google = require('./google')
 const kakao = require('./kakao')
 const local = require('./local')
+const { ROLE } = require('../../constants/role')
+const { Seller } = require('../../models')
 
 router.use('/google', google)
 router.use('/kakao', kakao)
