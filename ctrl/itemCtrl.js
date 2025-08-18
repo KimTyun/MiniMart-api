@@ -1,7 +1,5 @@
-// ctrl/itemCtrl.js
 const { Item, ItemImg, Seller } = require('../models')
 
-// 최근 등록된 상품들
 exports.getRecentItems = async (req, res, next) => {
    try {
       const items = await Item.findAll({
@@ -9,7 +7,7 @@ exports.getRecentItems = async (req, res, next) => {
             {
                model: ItemImg,
                where: { rep_img_yn: true },
-               required: false, // 대표 이미지 없어도 상품은 나오게
+               required: false,
                attributes: ['id', 'img_url', 'rep_img_yn'],
             },
             {
