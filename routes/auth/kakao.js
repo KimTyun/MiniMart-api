@@ -5,14 +5,11 @@ const bcrypt = require('bcrypt')
 const router = express.Router()
 const { isLoggedIn } = require('../../middlewares/middlewares')
 const User = require('../../models/user') // 경로 확인
-const FRONTEND_APP_URL = process.env.FRONTEND_APP_URL
-
 // 1. 카카오 로그인 URL 생성
 router.get('/', (req, res) => {
    const kakaoAuthURL = `https://kauth.kakao.com/oauth/authorize?response_type=code` + `&client_id=${process.env.KAKAO_REST_API_KEY}` + `&redirect_uri=${process.env.KAKAO_REDIRECT_URI}` + `&prompt=login` + `&scope=profile_image,birthyear,phone_number`
    res.json({ url: kakaoAuthURL })
 })
-
 // 2. 카카오 인증 후 Redirect 처리
 router.get('/callback', async (req, res) => {
    const { code } = req.query
@@ -30,20 +27,16 @@ router.get('/callback', async (req, res) => {
          },
       })
       const { access_token } = tokenRes.data
-
       // 2. 사용자 정보 요청
       const userRes = await axios.get('https://kapi.kakao.com/v2/user/me', {
          headers: { Authorization: `Bearer ${access_token}` },
       })
-
       const kakaoId = userRes.data.id
       const kakaoAccount = userRes.data.kakao_account
-
       // 3. DB에서 카카오 계정 찾기
       let user = await User.findOne({
          where: { provider: 'KAKAO', provider_id: kakaoId },
       })
-
       // 4. 없으면 새로 생성
       if (!user) {
          // 핸드폰 번호 계산
@@ -61,7 +54,6 @@ router.get('/callback', async (req, res) => {
             const currentYear = new Date().getFullYear()
             age = currentYear - parseInt(kakaoAccount.birthyear, 10) + 1 // 한국식 나이
          }
-
          user = await User.create({
             name: kakaoAccount.profile?.nickname || '카카오유저',
             email: kakaoAccount.email || `${kakaoId}@kakao.temp`, // 이메일 없으면 가짜로 생성
@@ -75,7 +67,6 @@ router.get('/callback', async (req, res) => {
             age: age,
          })
       }
-
       // 5. JWT 발급
       const payload = {
          id: user.id,
@@ -91,13 +82,12 @@ router.get('/callback', async (req, res) => {
       })
 
       // 6. 프론트로 전달
-      res.redirect(`${FRONTEND_APP_URL}/login/success?token=${jwtToken}`)
+      res.redirect(`http://localhost:5173/login/success?token=${jwtToken}`)
    } catch (err) {
       console.error('카카오 로그인 에러:', err)
       res.status(500).json({ error: '카카오 로그인 실패', detail: err.message })
    }
 })
-
 // 3. 사용자 정보 조회 API
 router.get('/me', isLoggedIn, (req, res) => {
    const { id, name, email, address, phone_number, profile_img, role } = req.user
@@ -111,5 +101,4 @@ router.get('/me', isLoggedIn, (req, res) => {
       role,
    })
 })
-
 module.exports = router
