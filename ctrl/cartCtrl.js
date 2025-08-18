@@ -1,9 +1,8 @@
 const { Cart, Item, ItemOption, ItemImg } = require('../models')
 
-// 현재 사용자의 장바구니 조회
 exports.getCart = async (req, res, next) => {
    try {
-      const userId = req.user.id // authorize 미들웨어를 통해 인증된 사용자의 ID
+      const userId = req.user.id
       const cartItems = await Cart.findAll({
          where: { buyer_id: userId },
          include: [
@@ -30,19 +29,16 @@ exports.getCart = async (req, res, next) => {
    }
 }
 
-// 장바구니에 상품 추가
 exports.addToCart = async (req, res, next) => {
    try {
       const userId = req.user.id
       const { itemId, itemOptionId, count } = req.body
 
-      // 이미 장바구니에 동일한 상품(옵션)이 있는지 확인
       const existingItem = await Cart.findOne({
          where: { buyer_id: userId, item_id: itemId, item_option_id: itemOptionId },
       })
 
       if (existingItem) {
-         // 이미 있다면 수량만 증가
          existingItem.count += count
          await existingItem.save()
          res.status(200).json({
@@ -51,7 +47,6 @@ exports.addToCart = async (req, res, next) => {
             data: existingItem,
          })
       } else {
-         // 없다면 새로 추가
          const newItem = await Cart.create({
             buyer_id: userId,
             item_id: itemId,
@@ -70,7 +65,6 @@ exports.addToCart = async (req, res, next) => {
    }
 }
 
-// 장바구니 상품 삭제
 exports.removeFromCart = async (req, res, next) => {
    try {
       const userId = req.user.id

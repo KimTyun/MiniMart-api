@@ -1,12 +1,10 @@
 const { Follow, Seller } = require('../models')
 
-// 1. 판매자 팔로우하기
 exports.followSeller = async (req, res, next) => {
    try {
-      const userId = req.user.id // 로그인한 유저의 ID
-      const { sellerId } = req.params // 팔로우할 판매자의 ID
+      const userId = req.user.id
+      const { sellerId } = req.params
 
-      // 이미 팔로우했는지 확인
       const existingFollow = await Follow.findOne({
          where: { buyer_id: userId, seller_id: sellerId },
       })
@@ -15,7 +13,6 @@ exports.followSeller = async (req, res, next) => {
          return res.status(409).json({ message: '이미 팔로우한 판매자입니다.' })
       }
 
-      // 팔로우 관계 생성
       await Follow.create({
          buyer_id: userId,
          seller_id: sellerId,
@@ -28,7 +25,6 @@ exports.followSeller = async (req, res, next) => {
    }
 }
 
-// 2. 판매자 언팔로우하기
 exports.unfollowSeller = async (req, res, next) => {
    try {
       const userId = req.user.id
@@ -49,7 +45,6 @@ exports.unfollowSeller = async (req, res, next) => {
    }
 }
 
-// 3. 내가 팔로우하는 판매자 목록 조회 (홈페이지용)
 exports.getFollowingSellersForHome = async (req, res, next) => {
    try {
       const userId = req.user.id
@@ -59,11 +54,11 @@ exports.getFollowingSellersForHome = async (req, res, next) => {
          include: [
             {
                model: Seller,
-               attributes: ['id', 'name', 'profile_img'], // 판매자 정보 포함
+               attributes: ['id', 'name', 'profile_img'],
             },
          ],
-         limit: 5, // 메인 페이지에서는 5개만 보여주도록 제한
-         order: [['createdAt', 'DESC']], // 최근에 팔로우한 순서
+         limit: 5,
+         order: [['createdAt', 'DESC']],
       })
 
       const sellers = followingList.map((f) => f.Seller)
