@@ -8,5 +8,7 @@ const { isLoggedIn } = require('../middlewares/middlewares')
 router.get('/:sellerId/items', sellerCtrl.getItemsBySeller)
 // 판매자 등록
 router.post('/register', isLoggedIn, registerSeller)
+// 판매자 조회
+router.get('/seller', sellerCtrl.getSeller)
 
 module.exports = router
