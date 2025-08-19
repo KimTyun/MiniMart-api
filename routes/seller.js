@@ -4,9 +4,13 @@ const sellerCtrl = require('../ctrl/sellerCtrl')
 const { authorize } = require('../middlewares/middlewares')
 const { ROLE } = require('../constants/role')
 const { Seller } = require('../models')
+const { registerSeller } = require('../ctrl/authCtrl')
+const { isLoggedIn } = require('../middlewares/middlewares')
 
 // GET /api/seller/:sellerId/items - 특정 판매자의 상품 목록 조회
 router.get('/:sellerId/items', sellerCtrl.getItemsBySeller)
+// 판매자 등록
+router.post('/register', isLoggedIn, registerSeller)
 
 router.put('/update', authorize(ROLE.SELLER), async (req, res, next) => {
    try {

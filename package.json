@@ -12,6 +12,7 @@
    "license": "ISC",
    "type": "commonjs",
    "dependencies": {
+      "@react-oauth/google": "^0.12.2",
       "axios": "^1.11.0",
       "bcrypt": "^6.0.0",
       "connect-history-api-fallback": "^2.0.0",
