@@ -11,7 +11,7 @@ router.get('/', (req, res) => {
    res.json({ url: kakaoAuthURL })
 })
 
-// 2. 카카오 인증 후 Redirect 처리 - passport.authenticate 활용
+// 2. 카카오 인증 후 Redirect 처리
 router.get(
    '/callback',
    passport.authenticate('kakao', {
