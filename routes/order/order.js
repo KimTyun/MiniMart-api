@@ -77,7 +77,7 @@ router.post('/', async (req, res, next) => {
             if (updateItem.stock_number < item.count) {
                throw new Error('상품 재고가 부족합니다.')
             }
-            updateItem.update(
+            await updateItem.update(
                {
                   stock_number: updateItem.stock_number - item.count,
                },
@@ -250,7 +250,7 @@ router.put('/cart', authorize(ROLE.ALL), async (req, res, next) => {
       const item = Item.findByPk(cartItem.item_id)
 
       if (item?.stock_number < newCount) newCount = item.stock_number
-      if (newCount < 0) newCount = 0
+      if (newCount < 1) newCount = 1
 
       await cartItem.update({
          count: newCount,

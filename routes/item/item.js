@@ -295,122 +295,83 @@ options는 option 객체({name,price,rep_item_yn})가 담겨있는 배열,
 hashtags는 hashtag가 담겨있는 배열, 
 deleteImg는 삭제할 이미지의 아이디가 담겨있는 배열 입니다.
 */
-router.put(
-   '/:itemId',
-   authorize(ROLE.SELLER),
-   upload.fields([
-      { name: 'imgs', maxCount: 4 }, // imgs는 여러개 가능
-      { name: 'img', maxCount: 1 }, // img는 1개만
-      { name: 'rep_img', maxCount: 1 },
-   ]),
-   async (req, res, next) => {
-      const transaction = await sequelize.transaction()
-      try {
-         const { itemId } = req.params
-         const item = await Item.findByPk(itemId)
-         if (!item) {
-            console.error(error)
-            await transaction.rollback()
-            const error = new Error('상품을 찾을 수 없습니다.')
-            error.status = 404
-            throw error
-         }
-         const { name, price, stock_number, description, status, is_sale, sale, options, hashtags, deleteImg } = req.body
+router.put('/:itemId', authorize(ROLE.SELLER), async (req, res, next) => {
+   const transaction = await sequelize.transaction()
+   try {
+      const { itemId } = req.params
+      const item = await Item.findByPk(itemId)
+      if (!item) {
+         console.error(error)
+         await transaction.rollback()
+         const error = new Error('상품을 찾을 수 없습니다.')
+         error.status = 404
+         throw error
+      }
+      const { name, price, stock_number, description, status, is_sale, sale, options, hashtags } = req.body
 
-         await item.update(
-            {
-               name,
-               price,
-               stock_number,
-               description,
-               status,
-               is_sale,
-               sale,
-            },
-            { transaction }
-         )
+      await item.update(
+         {
+            name,
+            price,
+            stock_number,
+            description,
+            status,
+            is_sale,
+            sale,
+         },
+         { transaction }
+      )
 
-         //아이템 옵션 지우기
-         await ItemOption.destroy({ where: { item_id: itemId }, transaction })
-         //아이템 옵션 새로생성
-         const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
-         await Promise.all(
-            parsedOptions.map((option) => {
-               return ItemOption.create(
-                  {
-                     item_id: item.id,
-                     name: option.name,
-                     price: option.price,
-                     rep_item_yn: option.rep_item_yn || false,
-                  },
-                  { transaction }
-               )
-            })
-         )
-
-         //해시태그 연결 해제
-         await item.setHashtags([], { transaction })
-
-         //새로 해시태그 설정
-         const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
-
-         if (parsedHashtags) {
-            const hashtagInstances = await Promise.all(
-               parsedHashtags.map((hashtag) => {
-                  return Hashtag.findOrCreate({
-                     where: { content: hashtag },
-                     transaction,
-                  }).then(([instance]) => instance)
-               }),
+      //아이템 옵션 지우기
+      await ItemOption.destroy({ where: { item_id: itemId }, transaction })
+      //아이템 옵션 새로생성
+      const parsedOptions = typeof options === 'string' ? JSON.parse(options) : options
+      await Promise.all(
+         parsedOptions.map((option) => {
+            return ItemOption.create(
+               {
+                  item_id: item.id,
+                  name: option.name,
+                  price: option.price,
+                  rep_item_yn: option.rep_item_yn || false,
+               },
                { transaction }
             )
-            await item.addHashtags(hashtagInstances, { transaction })
-         }
-
-         const parsedDeleteImg = typeof deleteImg === 'string' ? JSON.parse(deleteImg) : deleteImg
-
-         // 기존 이미지 중 지울 이미지만 db에서 제거한 뒤 이미지 파일도 제거
-         if (deleteImg && deleteImg.length > 0) {
-            await Promise.all(
-               parsedDeleteImg.map(async (img_id) => {
-                  const img = await ItemImg.findByPk(img_id)
-                  if (img) {
-                     ItemImg.destroy({ where: { id: img_id }, transaction })
-                     const filePath = path.join(__dirname, '../..', img.img_url)
-                     if (fs.existsSync(filePath)) {
-                        fs.unlinkSync(filePath)
-                     }
-                  }
-               })
-            )
-         }
-         //새로 넣은 이미지 추가
-         await Promise.all(
-            req.files['imgs'].map((file) =>
-               ItemImg.create(
-                  {
-                     item_id: item.id,
-                     img_url: file.location || `/uploads/item/${file.filename}`,
-                  },
-                  { transaction }
-               )
-            )
-         )
-
-         await transaction.commit()
-         res.status(200).json({
-            success: true,
-            message: '성공적으로 상품 수정이 완료되었습니다.',
          })
-      } catch (error) {
-         console.log(error)
-         await transaction.rollback()
-         error.status = error.status || 500
-         error.message = error.message || '상품 수정중 오류 발생'
-         next(error)
+      )
+
+      //해시태그 연결 해제
+      await item.setHashtags([], { transaction })
+
+      //새로 해시태그 설정
+      const parsedHashtags = typeof hashtags === 'string' ? JSON.parse(hashtags) : hashtags
+
+      if (parsedHashtags) {
+         const hashtagInstances = await Promise.all(
+            parsedHashtags.map((hashtag) => {
+               return Hashtag.findOrCreate({
+                  where: { content: hashtag },
+                  transaction,
+               }).then(([instance]) => instance)
+            }),
+            { transaction }
+         )
+         await item.addHashtags(hashtagInstances, { transaction })
       }
+
+      await transaction.commit()
+      res.status(200).json({
+         success: true,
+         message: '성공적으로 상품 수정이 완료되었습니다.',
+      })
+   } catch (error) {
+      console.log(error)
+      await transaction.rollback()
+      error.status = error.status || 500
+      error.message = error.message || '상품 수정중 오류 발생'
+      next(error)
    }
-)
+})
 
 //상품 삭제
 router.delete('/:itemId', authorize(ROLE.SELLER | ROLE.ADMIN), async (req, res, next) => {
