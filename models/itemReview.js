@@ -4,9 +4,13 @@ module.exports = class ItemReview extends Sequelize.Model {
    static init(sequelize) {
       return super.init(
          {
-            buyer_id: {
+            id: {
                type: DataTypes.INTEGER,
                primaryKey: true,
+               autoIncrement: true,
+            },
+            buyer_id: {
+               type: DataTypes.INTEGER,
                references: {
                   model: 'users',
                   key: 'id',
@@ -14,7 +18,6 @@ module.exports = class ItemReview extends Sequelize.Model {
             },
             seller_id: {
                type: DataTypes.INTEGER,
-               primaryKey: true,
                references: {
                   model: 'sellers',
                   key: 'id',
