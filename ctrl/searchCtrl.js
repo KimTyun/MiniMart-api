@@ -10,7 +10,7 @@ exports.searchItems = async (req, res, next) => {
 
       const whereClause = {}
       let orderClause = []
-      if (keyword) {
+      if (keyword && keyword.trim() !== '') {
          whereClause[Op.or] = [{ name: { [Op.like]: `%${keyword}%` } }, { description: { [Op.like]: `%${keyword}%` } }]
       }
 
