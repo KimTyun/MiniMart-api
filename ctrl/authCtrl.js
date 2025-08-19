@@ -71,7 +71,19 @@ exports.registerSeller = async (req, res) => {
 // 회원가입
 exports.register = async (req, res) => {
    try {
-      const { name, email, address, zipcode, extraaddress, detailaddress, password, phone_number, age, profile_img, role = 'buyer' } = req.body
+      const {
+         name,
+         email,
+         password,
+         phone_number,
+         address,
+         zipcode,
+         detailaddress,
+         extraaddress,
+         age,
+         role = 'buyer', // role의 기본값 지정
+      } = req.body
+
       const defaultProfileImg = '/uploads/profile-images/default.png'
 
       // 이메일 중복 확인
@@ -211,7 +223,7 @@ exports.resetPwByEmail = async (req, res) => {
       }
 
       // 4. 비밀번호 암호화
-      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      const hashedPassword = await bcrypt.hash(newPassword, 12)
 
       // 5. DB에서 사용자 찾아서 비밀번호 변경
       const user = await User.findOne({ where: { email } })
