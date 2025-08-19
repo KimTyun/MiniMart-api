@@ -11,6 +11,8 @@ const { isLoggedIn } = require('../middlewares/middlewares')
 router.get('/:sellerId/items', sellerCtrl.getItemsBySeller)
 // 판매자 등록
 router.post('/register', isLoggedIn, registerSeller)
+// 판매자 조회
+router.get('/seller', sellerCtrl.getSeller)
 
 router.put('/update', authorize(ROLE.SELLER), async (req, res, next) => {
    try {
