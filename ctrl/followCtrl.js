@@ -54,6 +54,7 @@ exports.getFollowingSellersForHome = async (req, res, next) => {
          include: [
             {
                model: Seller,
+               as: 'Seller',
                attributes: ['id', 'name', 'profile_img'],
             },
          ],
