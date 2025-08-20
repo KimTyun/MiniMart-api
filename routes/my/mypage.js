@@ -21,10 +21,6 @@ if (!fs.existsSync(uploadDir)) {
 const upload = multer({
    storage: multer.diskStorage({
       destination(req, file, cb) {
-         const uploadDir = path.join(__dirname, '../../uploads/profile-images')
-         if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true })
-         }
          cb(null, uploadDir)
       },
       filename(req, file, cb) {
@@ -154,13 +150,16 @@ router.get('/', isLoggedIn, async (req, res, next) => {
       })
 
       res.json({
-         user,
-         orders,
-         followings: followings.map((f) => ({
-            seller_id: f.Seller.id,
-            seller_name: f.Seller.name,
-            // seller_banner_img: f.Seller.banner_img,
-         })),
+         success: true,
+         message: '내 정보 전체 조회 성공',
+         data: {
+            user,
+            orders,
+            followings: followings.map((f) => ({
+               id: f.Seller.id,
+               name: f.Seller.name,
+            })),
+         },
       })
    } catch (error) {
       next(error)
@@ -205,18 +204,25 @@ router.patch('/edit', isLoggedIn, async (req, res, next) => {
       const user = await User.findByPk(userId)
       if (!user) return res.status(404).json({ message: '유저를 찾을 수 없습니다.' })
 
-      // user.update() 호출 시, 새로운 필드들을 업데이트
-      await user.update({
+      // user.update() 호출 시 새로운 필드들을 업데이트
+      const updateData = {
          name,
          phone_number,
          zipcode,
          address,
          detailaddress,
          extraaddress,
-      })
+      }
+      await user.update(updateData)
 
-      // 업데이트된 user 객체를 반환
-      res.json({ user })
+      // 업데이트된 user 객체 반환
+      res.json({
+         success: true,
+         message: '내 정보 수정 성공',
+         data: {
+            user,
+         },
+      })
    } catch (error) {
       next(error)
    }
@@ -239,41 +245,37 @@ router.patch('/edit', isLoggedIn, async (req, res, next) => {
  *       500:
  *         description: 서버 에러
  */
-router.delete('/delete', isLoggedIn, async (req, res) => {
+router.delete('/delete', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
 
-      // 1. 사용자 존재 여부 확인
       const user = await User.findByPk(userId)
       if (!user) {
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
 
-      // 2. 사용자 삭제
       await User.destroy({ where: { id: userId } })
 
-      // 3. 세션 제거 및 쿠키 삭제 (콜백 내 응답으로 이동)
       if (req.session) {
-         req.session.destroy((err) => {
-            if (err) {
-               console.error('세션 삭제 실패:', err)
-               return res.status(500).json({
-                  message: '회원 탈퇴는 되었지만, 세션 삭제에 실패했습니다.',
-               })
-            }
-
-            // 세션 성공적으로 삭제됐을 때만 응답
-            res.clearCookie('connect.sid')
-            return res.status(200).json({ message: '회원 탈퇴 성공' })
+         await new Promise((resolve, reject) => {
+            req.session.destroy((err) => {
+               if (err) {
+                  console.error('세션 삭제 실패:', err)
+                  reject(err)
+               } else {
+                  res.clearCookie('connect.sid')
+                  resolve()
+               }
+            })
          })
-      } else {
-         // 세션이 없는 경우에도 쿠키 제거 및 응답
-         res.clearCookie('connect.sid')
-         return res.status(200).json({ message: '회원 탈퇴 성공' })
       }
+      return res.status(200).json({
+         success: true,
+         message: '회원 탈퇴 성공',
+      })
    } catch (error) {
       console.error('회원 탈퇴 오류:', error)
-      return res.status(500).json({ message: '서버 오류로 인해 회원 탈퇴에 실패했습니다.' })
+      next(error)
    }
 })
 
@@ -338,8 +340,9 @@ router.delete('/delete', isLoggedIn, async (req, res) => {
  */
 router.patch('/orders/:orderId/cancel', isLoggedIn, async (req, res, next) => {
    const { orderId } = req.params
+   const userId = req.user.id
    try {
-      const order = await Order.findByPk(orderId)
+      const order = await Order.findOne({ where: { id: orderId, buyer_id: userId } })
       if (!order) {
          return res.status(404).json({ message: '해당 주문을 찾을 수 없습니다.' })
       }
@@ -381,11 +384,14 @@ router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage')
 
       // 유저 DB에 프로필 이미지 경로 업데이트 (필요시)
       const user = await User.findByPk(req.user.id)
-      if (user) {
-         user.profile_img = fileUrl
-         await user.save()
+      if (!user) {
+         fs.unlink(req.file.path, (err) => {
+            if (err) console.error('파일 삭제 오류:', err)
+         })
+         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
-
+      user.profile_img = fileUrl
+      await user.save()
       res.json({ url: fileUrl })
    } catch (error) {
       next(error)
