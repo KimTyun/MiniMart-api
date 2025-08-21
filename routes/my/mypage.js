@@ -304,15 +304,12 @@ router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage')
 })
 
 // 리뷰 작성
-router.post('/review', (req, res) => {
-   console.log('리뷰 라우터에 도달했습니다!')
-   res.status(200).send('OK')
-})
 router.post('/review', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
       const { orderId, sellerId, content } = req.body
 
+      res.status(200).send('OK')
       // 필수 데이터 체크
       if (!orderId || !sellerId || !content) {
          return res.status(400).json({ message: '필수 데이터가 누락되었습니다.' })
