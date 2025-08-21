@@ -279,7 +279,80 @@ router.delete('/delete', isLoggedIn, async (req, res, next) => {
    }
 })
 
-// 주문 취소 API
+// 프사 업로드
+router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
+   try {
+      if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' })
+
+      // 업로드된 이미지 경로
+      const fileUrl = `/uploads/profile-images/${req.file.filename}`
+
+      // 유저 DB에 프로필 이미지 경로 업데이트 (필요시)
+      const user = await User.findByPk(req.user.id)
+      if (!user) {
+         fs.unlink(req.file.path, (err) => {
+            if (err) console.error('파일 삭제 오류:', err)
+         })
+         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
+      }
+      user.profile_img = fileUrl
+      await user.save()
+      res.json({ url: fileUrl })
+   } catch (error) {
+      next(error)
+   }
+})
+
+// 리뷰 작성
+router.post('/review', (req, res) => {
+   console.log('리뷰 라우터에 도달했습니다!')
+   res.status(200).send('OK')
+})
+router.post('/review', isLoggedIn, async (req, res, next) => {
+   try {
+      const userId = req.user.id
+      const { orderId, sellerId, content } = req.body
+
+      // 필수 데이터 체크
+      if (!orderId || !sellerId || !content) {
+         return res.status(400).json({ message: '필수 데이터가 누락되었습니다.' })
+      }
+
+      // 주문 소유권 확인
+      const order = await Order.findOne({ where: { id: orderId, buyer_id: userId } })
+      if (!order) {
+         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나 권한이 없습니다.' })
+      }
+
+      // 리뷰 중복 확인
+      const existingReview = await ItemReview.findOne({
+         where: { buyer_id: userId, seller_id: sellerId },
+      })
+      if (existingReview) {
+         return res.status(400).json({ message: '이미 해당 상품에 리뷰를 작성했습니다.' })
+      }
+
+      // 리뷰 저장
+      const newReview = await ItemReview.create({
+         buyer_id: userId,
+         seller_id: sellerId,
+         content,
+      })
+
+      await Order.update({ hasReview: true }, { where: { id: orderId } })
+
+      return res.status(201).json({
+         message: '리뷰가 성공적으로 등록되었습니다.',
+         review: newReview,
+         orderId: orderId,
+      })
+   } catch (error) {
+      console.error('리뷰 등록 오류:', error)
+      next(error)
+   }
+})
+
+// 주문 취소
 /**
  *paths:
  *  /orders/{orderId}/cancel:
@@ -374,30 +447,6 @@ router.post('/unfollow/:sellerId', isLoggedIn, async (req, res, next) => {
    }
 })
 
-// 프사 업로드
-router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
-   try {
-      if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' })
-
-      // 업로드된 이미지 경로
-      const fileUrl = `/uploads/profile-images/${req.file.filename}`
-
-      // 유저 DB에 프로필 이미지 경로 업데이트 (필요시)
-      const user = await User.findByPk(req.user.id)
-      if (!user) {
-         fs.unlink(req.file.path, (err) => {
-            if (err) console.error('파일 삭제 오류:', err)
-         })
-         return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
-      }
-      user.profile_img = fileUrl
-      await user.save()
-      res.json({ url: fileUrl })
-   } catch (error) {
-      next(error)
-   }
-})
-
 // 판매자 내정보 가져오기
 router.get('/seller', authorize(ROLE.SELLER), async (req, res, next) => {
    try {
@@ -416,51 +465,6 @@ router.get('/seller', authorize(ROLE.SELLER), async (req, res, next) => {
    } catch (error) {
       console.error(error)
       error.message = error.message || '판매자 정보 불러오는 중 에러발생'
-      next(error)
-   }
-})
-
-// 리뷰 작성
-router.post('/review', isLoggedIn, async (req, res, next) => {
-   try {
-      const userId = req.user.id
-      const { orderId, productId, content } = req.body
-
-      // 필수 데이터 체크
-      if (!orderId || !productId || !content) {
-         return res.status(400).json({ message: '필수 데이터가 누락되었습니다.' })
-      }
-
-      // 주문 소유권 확인
-      const order = await Order.findOne({ where: { id: orderId, buyer_id: userId } })
-      if (!order) {
-         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나 권한이 없습니다.' })
-      }
-
-      // 리뷰 중복 확인
-      const existingReview = await ItemReview.findOne({
-         where: { buyer_id: userId, productId: productId },
-      })
-      if (existingReview) {
-         return res.status(400).json({ message: '이미 해당 상품에 리뷰를 작성했습니다.' })
-      }
-
-      // 리뷰 저장
-      const newReview = await ItemReview.create({
-         buyer_id: userId,
-         productId,
-         content,
-      })
-
-      await Order.update({ hasReview: true }, { where: { id: orderId } })
-
-      return res.status(201).json({
-         message: '리뷰가 성공적으로 등록되었습니다.',
-         review: newReview,
-         orderId: orderId,
-      })
-   } catch (error) {
-      console.error('리뷰 등록 오류:', error)
       next(error)
    }
 })
