@@ -196,7 +196,7 @@ router.get('/cart', authorize(ROLE.ALL), async (req, res, next) => {
                         },
                         {
                            model: Seller,
-                           attributes: ['id', 'name'],
+                           attributes: ['id', 'name', 'banner_img'],
                            include: [
                               {
                                  model: User,
