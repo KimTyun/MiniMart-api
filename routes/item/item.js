@@ -437,7 +437,8 @@ router.get('/:itemId', async (req, res, next) => {
             },
             {
                model: Seller,
-               attributes: ['id', 'name'],
+               // 'banner_img' 추가
+               attributes: ['id', 'name', 'banner_img'],
                include: [
                   {
                      model: User,

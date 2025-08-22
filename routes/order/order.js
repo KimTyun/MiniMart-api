@@ -215,11 +215,15 @@ router.get('/cart', authorize(ROLE.ALL), async (req, res, next) => {
          ],
       })
 
+      // 장바구니 비어있을경우 오류 보내지 않고 빈배열
       if (!cart) {
-         return res.status(404).json({
-            success: false,
+         return res.json({
+            success: true,
             message: '장바구니 없음',
-            cart: null,
+            cart: {
+               user_id: req?.user?.id,
+               CartItem: [],
+            },
          })
       }
 
