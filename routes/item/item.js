@@ -178,7 +178,7 @@ router.get('/recent', async (req, res, next) => {
             },
             {
                model: Seller,
-               attributes: ['id', 'name'],
+               attributes: ['id', 'name', 'banner_img'],
             },
          ],
          attributes: ['id', 'name', 'price', 'stock_number', 'status', 'createdAt'],
@@ -207,7 +207,7 @@ router.get('/popular/age', async (req, res, next) => {
          const rows = await Item.findAll({
             attributes: ['id', 'name'], // Item 기준
             include: [
-               { model: Seller, attributes: ['id', 'name'] },
+               { model: Seller, attributes: ['id', 'name', 'banner_img'] },
                {
                   model: ItemImg,
                   attributes: ['id', 'img_url'],
@@ -243,7 +243,7 @@ router.get('/popular/age', async (req, res, next) => {
                },
             ],
             // ONLY_FULL_GROUP_BY 대응: SELECT에 나오는 애들 전부 GROUP BY
-            group: ['Item.id', 'Item.name', 'Seller.id', 'Seller.name', 'ItemImgs.id', 'ItemImgs.img_url'],
+            group: ['Item.id', 'Item.name', 'Seller.id', 'Seller.name', 'ItemImgs.id', 'ItemImgs.img_url', 'banner_img'],
             // col()/fn() 안 쓰고 literal로 합계 정렬
             order: [
                [sequelize.literal('SUM(`ItemOptions->OrderItem`.`count`)'), 'DESC'], // ← 단수
@@ -264,6 +264,7 @@ router.get('/popular/age', async (req, res, next) => {
             item_name: it.name ?? null,
             seller_name: it.Seller?.name ?? null,
             rep_img_url: it.ItemImgs?.[0]?.img_url ?? null,
+            banner_img: it.Seller?.banner_img ?? null,
          }
       }
 
@@ -436,7 +437,8 @@ router.get('/:itemId', async (req, res, next) => {
             },
             {
                model: Seller,
-               attributes: ['id', 'name'],
+               // 'banner_img' 추가
+               attributes: ['id', 'name', 'banner_img'],
                include: [
                   {
                      model: User,
