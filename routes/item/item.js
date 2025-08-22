@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { authorize } = require('../../middlewares/middlewares')
+const { authorize, isLoggedIn } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
 const { Item, ItemOption, ItemImg, Hashtag, Seller, Order, OrderItem, User } = require('../../models')
 const { Op } = require('sequelize')
@@ -501,6 +501,57 @@ router.get('/seller/:sellerId', async (req, res, next) => {
    } catch (error) {
       error.status = error.status || 500
       error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
+   }
+})
+
+// 추천상품(implicit 적용)
+router.post('/implicit', isLoggedIn, async (req, res, next) => {
+   try {
+      const userId = req.user.id
+      const userCIs = await sequelize.query(
+         `
+         SELECT 
+             c.user_id AS user_id,
+             ci.item_id AS item_id,
+             CAST(SUM(ci.count) AS UNSIGNED) AS carts_count
+         FROM carts c
+         JOIN cart_item ci ON c.user_id = ci.user_id
+         WHERE c.user_id = :userId
+         GROUP BY ci.item_id, c.user_id
+         ORDER BY c.user_id, ci.item_id;
+         `,
+         {
+            replacements: { userId: userId },
+            type: sequelize.QueryTypes.SELECT,
+         }
+      )
+
+      const cartItemIds = userCIs.map((item) => item.item_id)
+
+      const recommendItems = await Item.findAll({
+         where: {
+            id: { [Op.in]: cartItemIds },
+         },
+         include: [
+            {
+               model: Img,
+               attributes: ['id', 'oriImgName', 'imgUrl', 'repImgYn'],
+               where: { repImgYn: 'Y' },
+            },
+         ],
+         order: [[fn('FIELD', col('Item.id'), ...cartItemIds), 'ASC']],
+         distinct: true,
+      })
+
+      res.json({
+         success: true,
+         message: 'Implicit 추천 상품 조회 성공',
+         recommendItems,
+      })
+   } catch (error) {
+      error.status = 500
+      error.message = '추천 상품을 불러오는 중 오류가 발생했습니다.'
       next(error)
    }
 })
