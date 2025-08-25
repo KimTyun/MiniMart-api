@@ -25,15 +25,9 @@
 <br />
 
 ## 개발스택
-- LANGUAGE : <img src="https://img.shields.io/badge/JAVA 17-blue?style=flat&logo=Java&logoColor=white"/> <img src="https://img.shields.io/badge/HTML-orange?style=flat&logo=html5&logoColor=white"/> <img src="https://img.shields.io/badge/CSS-1572B6?style=flat&logo=CSS3&logoColor=white"/> <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=Javascript&logoColor=white"/> <img src="https://img.shields.io/badge/Bootstrap-7952B3?style=flat&logo=Bootstrap&logoColor=white"/>
-- FRAMEWORK : <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/Spring MVC-6DB33F?style=flat&logo=spring&logoColor=white"/> 
-- DB : <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=mysql&logoColor=white"/>
-- SECURITY : <img src="https://img.shields.io/badge/Spring Security-6DB33F?style=flat&logo=springsecurity&logoColor=white"/>
-- BULID : <img src="https://img.shields.io/badge/Maven-light purple?style=flat&logo=maven&logoColor=white"/>
-- TOOL : <img src="https://img.shields.io/badge/EclipseIDE-2C2255?style=flat&logo=eclipseide&logoColor=white"/>
-- ORM : <img src="https://img.shields.io/badge/Spring JPA-6DB33F?style=flat&logo=spring&logoColor=white"/>
-- API : 구글과 다음카카오, 다음 주소 찾기 api
-<br />
+<table> <tr> <td align="center"><strong>Frontend</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/React-61DAFB%3Fstyle%3Dfor-the-badge%26logo%3DReact%26logoColor%3Dblack"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Redux Toolkit-764ABC?style=for-the-badge&logo=Redux&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/React Router-CA4245?style=for-the-badge&logo=React-Router&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Axios-5A29E4%3Fstyle%3Dfor-the-badge%26logo%3DAxios%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Styled Components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white"/> </td> </tr> <tr> <td align="center"><strong>Backend</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Node.js-339933%3Fstyle%3Dfor-the-badge%26logo%3DNode.js%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Express-000000%3Fstyle%3Dfor-the-badge%26logo%3DExpress%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Sequelize-52B0E7%3Fstyle%3Dfor-the-badge%26logo%3DSequelize%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Passport-34E27A%3Fstyle%3Dfor-the-badge%26logo%3DPassport%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/JWT-000000%3Fstyle%3Dfor-the-badge%26logo%3DJSON-Web-Tokens%26logoColor%3Dwhite"/> </td> </tr> <tr> <td align="center"><strong>Database</strong></td> <td> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white"/> </td> </tr> <tr> <td align="center"><strong>Deployment</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/AWS-232F3E%3Fstyle%3Dfor-the-badge%26logo%3DAmazon-AWS%26logoColor%3Dwhite"/> </td> </tr> <tr> <td align="center"><strong>Collaboration</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Git-F05032%3Fstyle%3Dfor-the-badge%26logo%3DGit%26logoColor%3Dwhite"/> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Figma-F24E1E%3Fstyle%3Dfor-the-badge%26logo%3DFigma%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Swagger-85EA2D%3Fstyle%3Dfor-the-badge%26logo%3DSwagger%26logoColor%3Dblack"/> </td> </tr> </table>
+<br/>
+
 
 ## 담당 파트 상세내역
 > 팀장 : 김택윤
@@ -94,3 +88,4 @@
 <a href="https://github.com/KimTyun/MiniMart-api">API git 링크</a>
 <br />
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
+
