@@ -113,40 +113,38 @@ router.get('/', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
 
-      // 유저 정보 조회 (필요한 필드만 선택)
+      // 유저 정보 조회
       const user = await User.findByPk(userId, {
          attributes: ['id', 'name', 'email', 'phone_number', 'address', 'profile_img', 'role'],
       })
 
-      // 구매 내역 조회 (orderitem 조인)
+      // 주문 내역 조회
       const orders = await Order.findAll({
          where: { buyer_id: userId },
+         order: [['createdAt', 'DESC']],
          include: [
             {
                model: OrderItem,
-               attributes: ['count'],
                include: [
                   {
                      model: Item,
-                     attributes: ['id', 'name'],
                      include: [
                         {
                            model: ItemImg,
-                           attributes: ['url'],
-                           limit: 1,
                         },
                      ],
                   },
                ],
             },
          ],
-         order: [['createdAt', 'DESC']],
       })
 
       // 팔로잉 목록 조회
       const followings = await Follow.findAll({
-         where: { buyer_id: userId }, // buyer_id 사용
+         where: { buyer_id: userId },
          include: [{ model: Seller, as: 'Seller', attributes: ['id', 'name'] }],
+         raw: true,
+         nest: true,
       })
 
       res.json({
@@ -155,13 +153,16 @@ router.get('/', isLoggedIn, async (req, res, next) => {
          data: {
             user,
             orders,
-            followings: followings.map((f) => ({
-               id: f.Seller.id,
-               name: f.Seller.name,
-            })),
+            followings: followings
+               .filter((f) => f.Seller?.id)
+               .map((f) => ({
+                  id: f.Seller.id,
+                  name: f.Seller.name,
+               })),
          },
       })
    } catch (error) {
+      console.error(error)
       next(error)
    }
 })

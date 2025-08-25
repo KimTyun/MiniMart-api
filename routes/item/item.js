@@ -3,7 +3,7 @@ const router = express.Router()
 const { authorize, isLoggedIn } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
 const { Item, ItemOption, ItemImg, Hashtag, Seller, Order, OrderItem, User } = require('../../models')
-const { Op } = require('sequelize')
+const { Op, fn, col } = require('sequelize')
 const { sequelize } = require('../../models')
 const fs = require('fs')
 const multer = require('multer')
@@ -506,50 +506,32 @@ router.get('/seller/:sellerId', async (req, res, next) => {
 })
 
 // 추천상품(implicit 적용)
-router.post('/implicit', isLoggedIn, async (req, res, next) => {
+router.post('/recommend', isLoggedIn, async (req, res, next) => {
    try {
-      const userId = req.user.id
-      const userCIs = await sequelize.query(
-         `
-         SELECT 
-             c.user_id AS user_id,
-             ci.item_id AS item_id,
-             CAST(SUM(ci.count) AS UNSIGNED) AS carts_count
-         FROM carts c
-         JOIN cart_item ci ON c.user_id = ci.user_id
-         WHERE c.user_id = :userId
-         GROUP BY ci.item_id, c.user_id
-         ORDER BY c.user_id, ci.item_id;
-         `,
-         {
-            replacements: { userId: userId },
-            type: sequelize.QueryTypes.SELECT,
-         }
-      )
-
-      const cartItemIds = userCIs.map((item) => item.item_id)
-
+      const items = req.body
+      const ids = items.map((x) => x.id)
+      // const recommendItems = await Item.findAll({ where: { id: ids } })
       const recommendItems = await Item.findAll({
-         where: {
-            id: { [Op.in]: cartItemIds },
-         },
+         where: { id: { [Op.in]: ids } },
          include: [
             {
-               model: Img,
-               attributes: ['id', 'oriImgName', 'imgUrl', 'repImgYn'],
-               where: { repImgYn: 'Y' },
+               model: ItemImg,
+               attributes: ['id', 'img_url', 'rep_img_yn'],
+               where: { rep_img_yn: 1 },
             },
          ],
-         order: [[fn('FIELD', col('Item.id'), ...cartItemIds), 'ASC']],
-         distinct: true,
+         order: [[fn('FIELD', col('Item.id'), ...ids), 'ASC']], // id 순서 그대로
+         distinct: true, // 중복 로우 방지(조인 시)
       })
 
       res.json({
          success: true,
-         message: 'Implicit 추천 상품 조회 성공',
+         message: '추천 상품 조회 성공',
          recommendItems,
       })
    } catch (error) {
+      console.log(error)
+
       error.status = 500
       error.message = '추천 상품을 불러오는 중 오류가 발생했습니다.'
       next(error)
