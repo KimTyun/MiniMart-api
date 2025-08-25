@@ -24,9 +24,58 @@
 </table>
 <br />
 
+## 개발환경
+ - OS: Windows 10, 11
+ - 실행 환경: Node.js v22.18.0, Python 3.13.7
+ - 개발 도구: VS Code, Git & GitHub, DBeaver, Anaconda
+ - 데이터베이스: MySQL v8.0.43
+
 ## 개발스택
-<table> <tr> <td align="center"><strong>Frontend</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/React-61DAFB%3Fstyle%3Dfor-the-badge%26logo%3DReact%26logoColor%3Dblack"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=Vite&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Redux Toolkit-764ABC?style=for-the-badge&logo=Redux&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/React Router-CA4245?style=for-the-badge&logo=React-Router&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Axios-5A29E4%3Fstyle%3Dfor-the-badge%26logo%3DAxios%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Styled Components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white"/> </td> </tr> <tr> <td align="center"><strong>Backend</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Node.js-339933%3Fstyle%3Dfor-the-badge%26logo%3DNode.js%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Express-000000%3Fstyle%3Dfor-the-badge%26logo%3DExpress%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Sequelize-52B0E7%3Fstyle%3Dfor-the-badge%26logo%3DSequelize%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Passport-34E27A%3Fstyle%3Dfor-the-badge%26logo%3DPassport%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/JWT-000000%3Fstyle%3Dfor-the-badge%26logo%3DJSON-Web-Tokens%26logoColor%3Dwhite"/> </td> </tr> <tr> <td align="center"><strong>Database</strong></td> <td> <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white"/> </td> </tr> <tr> <td align="center"><strong>Deployment</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/AWS-232F3E%3Fstyle%3Dfor-the-badge%26logo%3DAmazon-AWS%26logoColor%3Dwhite"/> </td> </tr> <tr> <td align="center"><strong>Collaboration</strong></td> <td> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Git-F05032%3Fstyle%3Dfor-the-badge%26logo%3DGit%26logoColor%3Dwhite"/> <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Figma-F24E1E%3Fstyle%3Dfor-the-badge%26logo%3DFigma%26logoColor%3Dwhite"/> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Swagger-85EA2D%3Fstyle%3Dfor-the-badge%26logo%3DSwagger%26logoColor%3Dblack"/> </td> </tr> </table>
-<br/>
+<table>
+  <tbody>
+    <tr>
+      <td align="center"><strong>Frontend</strong></td>
+      <td>
+        <img src="https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=React&logoColor=black"/>
+        <img src="https://img.shields.io/badge/Redux Toolkit-764ABC?style=for-the-badge&logo=Redux&logoColor=white"/>
+        <img src="https://img.shields.io/badge/React Router-CA4245?style=for-the-badge&logo=React-Router&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Axios-5A29E4?style=for-the-badge&logo=Axios&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Styled Components-DB7093?style=for-the-badge&logo=styled-components&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Backend</strong></td>
+      <td>
+        <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=Node.js&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Express-000000?style=for-the-badge&logo=Express&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Sequelize-52B0E7?style=for-the-badge&logo=Sequelize&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Passport-34E27A?style=for-the-badge&logo=Passport&logoColor=white"/>
+        <img src="https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=JSON-Web-Tokens&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Database</strong></td>
+      <td>
+        <img src="https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=MySQL&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Deployment</strong></td>
+      <td>
+        <img src="https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=Amazon-AWS&logoColor=white"/>
+      </td>
+    </tr>
+    <tr>
+      <td align="center"><strong>Collaboration</strong></td>
+      <td>
+        <img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=Git&logoColor=white"/>
+        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=GitHub&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=Figma&logoColor=white"/>
+        <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black"/>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
 
 ## 담당 파트 상세내역
@@ -88,4 +137,5 @@
 <a href="https://github.com/KimTyun/MiniMart-api">API git 링크</a>
 <br />
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
+
 
