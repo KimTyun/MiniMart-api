@@ -74,6 +74,12 @@
         <img src="https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=Swagger&logoColor=black"/>
       </td>
     </tr>
+      <tr>
+      <td align="center"><strong>API</strong></td>
+      <td>
+        <p>다음카카오, 구글</p>
+      </td>
+    </tr>
   </tbody>
 </table>
 
@@ -131,11 +137,16 @@
 ### ERD
 <img width="3020" height="1412" alt="Project_Minimart" src="https://github.com/user-attachments/assets/c72c3506-1b1d-47dc-8d45-e4f05a855680" />
 
+###프로젝트 아키텍쳐
+<img width="1990" height="1100" alt="image" src="https://github.com/user-attachments/assets/b2db01ff-1131-44d5-97f5-e9d886d1bf1f" />
+
+
 ------------
 
 ### 프로젝트 협업용 git
 <a href="https://github.com/KimTyun/MiniMart-api">API git 링크</a>
 <br />
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
+
 
 
