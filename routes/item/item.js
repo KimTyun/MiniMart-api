@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { authorize } = require('../../middlewares/middlewares')
+const { authorize, isLoggedIn } = require('../../middlewares/middlewares')
 const { ROLE } = require('../../constants/role')
 const { Item, ItemOption, ItemImg, Hashtag, Seller, Order, OrderItem, User } = require('../../models')
 const { Op } = require('sequelize')
@@ -178,7 +178,7 @@ router.get('/recent', async (req, res, next) => {
             },
             {
                model: Seller,
-               attributes: ['id', 'name'],
+               attributes: ['id', 'name', 'banner_img'],
             },
          ],
          attributes: ['id', 'name', 'price', 'stock_number', 'status', 'createdAt'],
@@ -207,7 +207,7 @@ router.get('/popular/age', async (req, res, next) => {
          const rows = await Item.findAll({
             attributes: ['id', 'name'], // Item 기준
             include: [
-               { model: Seller, attributes: ['id', 'name'] },
+               { model: Seller, attributes: ['id', 'name', 'banner_img'] },
                {
                   model: ItemImg,
                   attributes: ['id', 'img_url'],
@@ -243,7 +243,7 @@ router.get('/popular/age', async (req, res, next) => {
                },
             ],
             // ONLY_FULL_GROUP_BY 대응: SELECT에 나오는 애들 전부 GROUP BY
-            group: ['Item.id', 'Item.name', 'Seller.id', 'Seller.name', 'ItemImgs.id', 'ItemImgs.img_url'],
+            group: ['Item.id', 'Item.name', 'Seller.id', 'Seller.name', 'ItemImgs.id', 'ItemImgs.img_url', 'banner_img'],
             // col()/fn() 안 쓰고 literal로 합계 정렬
             order: [
                [sequelize.literal('SUM(`ItemOptions->OrderItem`.`count`)'), 'DESC'], // ← 단수
@@ -264,6 +264,7 @@ router.get('/popular/age', async (req, res, next) => {
             item_name: it.name ?? null,
             seller_name: it.Seller?.name ?? null,
             rep_img_url: it.ItemImgs?.[0]?.img_url ?? null,
+            banner_img: it.Seller?.banner_img ?? null,
          }
       }
 
@@ -436,7 +437,8 @@ router.get('/:itemId', async (req, res, next) => {
             },
             {
                model: Seller,
-               attributes: ['id', 'name'],
+               // 'banner_img' 추가
+               attributes: ['id', 'name', 'banner_img'],
                include: [
                   {
                      model: User,
@@ -499,6 +501,57 @@ router.get('/seller/:sellerId', async (req, res, next) => {
    } catch (error) {
       error.status = error.status || 500
       error.message = error.message || '상품 정보를 불러오는중 오류 발생'
+      next(error)
+   }
+})
+
+// 추천상품(implicit 적용)
+router.post('/implicit', isLoggedIn, async (req, res, next) => {
+   try {
+      const userId = req.user.id
+      const userCIs = await sequelize.query(
+         `
+         SELECT 
+             c.user_id AS user_id,
+             ci.item_id AS item_id,
+             CAST(SUM(ci.count) AS UNSIGNED) AS carts_count
+         FROM carts c
+         JOIN cart_item ci ON c.user_id = ci.user_id
+         WHERE c.user_id = :userId
+         GROUP BY ci.item_id, c.user_id
+         ORDER BY c.user_id, ci.item_id;
+         `,
+         {
+            replacements: { userId: userId },
+            type: sequelize.QueryTypes.SELECT,
+         }
+      )
+
+      const cartItemIds = userCIs.map((item) => item.item_id)
+
+      const recommendItems = await Item.findAll({
+         where: {
+            id: { [Op.in]: cartItemIds },
+         },
+         include: [
+            {
+               model: Img,
+               attributes: ['id', 'oriImgName', 'imgUrl', 'repImgYn'],
+               where: { repImgYn: 'Y' },
+            },
+         ],
+         order: [[fn('FIELD', col('Item.id'), ...cartItemIds), 'ASC']],
+         distinct: true,
+      })
+
+      res.json({
+         success: true,
+         message: 'Implicit 추천 상품 조회 성공',
+         recommendItems,
+      })
+   } catch (error) {
+      error.status = 500
+      error.message = '추천 상품을 불러오는 중 오류가 발생했습니다.'
       next(error)
    }
 })
