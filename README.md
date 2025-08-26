@@ -4,9 +4,10 @@
 </div>
 <br />
 
-
-# MINI MART - API
-> 아이디어스를 참고하여 "구글과 다음카카오, 다음 주소 찾기 api"를 활용해서 만든 이커머스 사이트
+# 1. 프로젝트 개요 (Introduction)
+## MINI MART - API
+> 가입을 쉽게 할 수 있도록 "구글과 다음카카오, 다음 주소 찾기 api"를 활용해서 만든 이커머스 사이트
+> 사용자는 개성 있는 상품을 발견하는 즐거움을, 판매자는 안정적인 온라인 판로를 확보하며 브랜드 가치를 높이는 경험을 제공하는 것을 목표로 합니다.
 <br />
 
 ## 팀원
@@ -30,7 +31,7 @@
  - 개발 도구: VS Code, Git & GitHub, DBeaver, Anaconda
  - 데이터베이스: MySQL v8.0.43
 
-## 개발스택
+## 2. 기술 스택 (Tech Stack)
 <table>
   <tbody>
     <tr>
@@ -84,49 +85,42 @@
 </table>
 
 
-## 담당 파트 상세내역
-> 팀장 : 김택윤
-  - 일정관리 조율
-  - 회의진행
-  - 깃 허브 관리 
-  - AWS 배포
-  - ERD 설계
-  - 회원가입 페이지 구현 _ 주소 api 활용 우편번호 검색기능 추가
-  - 상품 상세페이지 구현
-<br />
+## 3. 주요 기능 (Features)
+<table>
+  <tbody>
+    <tr>
+        <td align="center"><strong>기능분류</strong></td>
+        <td align="center"><strong>주요기능</strong></td>
+        <td align="center"><strong>담당자</strong></td>
+    </tr>
+    <tr>
+        <td align="center"><strong>회원 관리</strong></td>
+        <td align="center"><p>로컬/소셜(구글, 카카오) 회원가입, 로그인/자동로그인, 마이페이지(정보수정/탈퇴), 아이디/비밀번호 찾기</p></td>
+        <td align="center"><p>김동빈, 박인덕, 박태민</p></td>
+    </tr>
+    <tr>
+        <td align="center"><strong>상품 및 주문</strong></td>
+        <td align="center"><p>상품 등록/수정/삭제, 상세 페이지, 장바구니, 주문 내역 관리</p></td>
+        <td align="center"><p>김택윤, 박태민</p></td>
+    </tr>
+      <tr>
+        <td align="center"><strong>구매자 시스템</strong></td>
+        <td align="center"><p>회원기능, 회원 정보 관리, 사용자 정보 삭제(회원탈퇴), 키워드/가격 조건별 상품 검색, 고객센터(FAQ/Q&A) 페이지</p></td>
+        <td align="center"><p>김동빈, 박인덕</p></td>
+    </tr>
+    <tr>
+        <td align="center"><strong>판매자 시스템, 관리자 페이지</strong></td>
+        <td align="center"><p>회원 정보 관리, 판매자 등록 신청,판매자 승인 관리,  관리자 승인/거절, 판매자별 상세 페이지, 관리자 대시보드</p></td>
+        <td align="center"><p>박태민</p></td>
+    </tr>
+  </tbody>
+</table>
 
-> 팀원 : 김동빈
-  - 회원 관련 시스템 설계
-  - 로그인 기능 구현 _ 자체 / 소셜 / 자동로그인
-  - 아이디 / 비밀번호 찾기 기능 구현
-  - 문의하기 기능 구현 _ 문의내역 리스트 / 문의 답변하기
-  - 개인정보 수정 페이지 구현
-  - 회원정보 관리페이지 구현
-<br />
-
-> 팀원 : 박인덕
-  - 전체 디자인 설계(메인페이지 / 문의하기 / 관리페이지 등)
-  - 검색 키워드 기능 구현 
-  - 검색 관리페이지 구현
-  - 개인정보 수정 페이지 구현
-  - 회원정보 관리페이지 구현
-<br />
-
-> 팀원 : 박태민
-  - 전체 디자인 구현(메인페이지 / 문의하기 / 관리페이지 등)
-  - 회원가입 페이지 구현 _ 구글 로그인, 카카오 로그인 구현
-  - 주문관련 시스템 설계
-  - 도서 상세페이지 구현 _ 도서 결제시스템 / 도서 찜하기
-  - 메인페이지 구현 _ 공지사항 / 이미지슬라이드 / 북티빙Top10 / NEW북티빙 / 서점베스트셀러
-  - 추천작가 리스트, 상세페이지 구현
-  - 도서 상세페이지 구현
-  - 문의 안내페이지 구현
-  - 나의 서재 _ 메인페이지 / 나의 챌린지 / 대여도서 상세페이지
-  - 공지사항 목록 페이지 구현 
-  - 관리페이지 _ 추천작가 등록 / 공지사항 등록
-<br />
+<br/>
 
 ------------
+## 4. 시스템 아키텍처 / ERD (Architecture & DB), 산출물
+<br />
 
 ### [ERD](https://www.erdcloud.com/d/5DbeF5rmn7wWfd2pY)
 ### [화면설계](https://www.figma.com/design/gNTLe3DX9wBXhiyTJkqf9K/MiniMart-1%EC%A1%B0?node-id=0-1&p=f&t=SvgzfqY0tN9Gx9IE-0)
@@ -137,9 +131,105 @@
 ### ERD
 <img width="3020" height="1412" alt="Project_Minimart" src="https://github.com/user-attachments/assets/c72c3506-1b1d-47dc-8d45-e4f05a855680" />
 
-###프로젝트 아키텍쳐
+### 프로젝트 아키텍쳐
 <img width="1990" height="1100" alt="image" src="https://github.com/user-attachments/assets/b2db01ff-1131-44d5-97f5-e9d886d1bf1f" />
 
+
+------------
+
+## 5. 실행 방법 (Getting Started)
+> 로컬에서 실행(clone → install → run)
+> 필요 시 환경변수(.env)
+> # MiniMart-frontend .env파일
+VITE_API_URL=http://localhost:8000
+
+> # MiniMart-api .env 파일
+
+# 포트번호
+PORT=8000
+
+# 개발환경(development/test/production)
+NODE_ENV=development
+
+# 쿠키와 세션을 만들때 필요한 암호화 키(키 값은 자유롭게 작성가능)
+COOKIE_SECRET= minimartcookiesecret2025
+# 토근을 발급받을 때 필요한 암호화 키
+JWT_SECRET= minimartjwtsecret2025
+
+# DB정보
+# 개발용 DB
+DB_DEV_HOST=127.0.0.1
+DB_DEV_USERNAME=root
+DB_DEV_PASSWORD=1234
+DB_DEV_NAME=minimart
+DB_DEV_DIALECT=mysql
+
+
+# 배포용 DB
+DB_PRO_HOST=127.0.0.1
+DB_PRO_USERNAME=root
+DB_PRO_PASSWORD=1234
+DB_PRO_NAME=minimart
+DB_PRO_DIALECT=mysql
+
+# 테스트용 DB
+DB_TEST_HOST=127.0.0.1
+DB_TEST_USERNAME=root
+DB_TEST_PASSWORD=1234
+DB_TEST_NAME=minimart
+DB_TEST_DIALECT=mysql
+
+# 프론트엔드 주소
+FRONTEND_APP_URL=http://localhost:5173
+
+# 백엔드 주소
+APP_API_URL=http://localhost:8000
+
+
+# 구글 로그인 api용
+GOOGLE_CLIENT_ID=169522016581-ckdr76e48i1k0gklbqnsu05bker33aot.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_CALLBACK_URL=http://localhost:8000/auth/google/callback
+
+#카카오 로그인
+KAKAO_REST_API_KEY=7415ede5f1352034f84d402942c4e281
+KAKAO_REDIRECT_URI=http://localhost:8000/auth/kakao/callback
+JWT_SECRET=your_jwt_secret
+
+------------
+
+## 팀 구성 및 역할 (Team & Contribution)
+> 팀장 : 김택윤
+  - 프로젝트 총괄 및 일정 관리, Git 브랜치 전략 수립
+  - ERD 설계 및 DB 모델링 
+  - AWS EC2/S3/RDS를 활용한 배포 및 CI/CD 파이프라인 구축
+  - 회원가입 페이지 구현 _ 주소 api 활용 우편번호 검색기능 추가
+  - 상품 등록/수정/삭제 및 상세 페이지 구현
+<br />
+
+> 팀원 : 김동빈
+  - 회원 관련 시스템 설계
+  - 로그인 기능 구현 _ 자체(로컬)
+  - 아이디 / 비밀번호 찾기 기능 구현
+  - 문의하기 기능 구현 _ 문의내역 리스트 / 문의 답변하기
+  - 워크플로우 관리, API 명세서 관리(Swagger 사용)
+<br />
+
+> 팀원 : 박인덕
+  - 전체 페이지 UI/UX 설계, 구현(메인페이지 / 고객센터 / 검색 / 관리페이지 등)
+  - 화면 초기 설계(figma)
+  - 자동로그인 설계, 구현
+  - 키워드/가격 조건별 상품 검색 기능, 관리페이지 구현
+  - 와이어프레임 관리, 구현
+<br />
+
+> 팀원 : 박태민
+  - 전체 페이지 UI/UX 설계, 구현(메인페이지 / 고객센터 / 검색 / 관리페이지 등)
+  - 로그인 기능 구현 _ 소셜(구글, 카카오) 로그인
+  - 회원가입 페이지 구현 _ 구글 로그인, 카카오 로그인 구현
+  - 개인정보 수정 페이지 구현
+  - 관리자 페이지 대시보드 UI 및 통계 데이터 시각화
+<br />
 
 ------------
 
@@ -148,5 +238,6 @@
 <br />
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
 
+------------
 
 
