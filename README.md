@@ -140,61 +140,6 @@
 ## 5. 실행 방법 (Getting Started)
 > 로컬에서 실행(clone → install → run)
 > 필요 시 환경변수(.env)
-> # MiniMart-frontend .env파일
-VITE_API_URL=http://localhost:8000
-
-> # MiniMart-api .env 파일
-
-# 포트번호
-PORT=8000
-
-# 개발환경(development/test/production)
-NODE_ENV=development
-
-# 쿠키와 세션을 만들때 필요한 암호화 키(키 값은 자유롭게 작성가능)
-COOKIE_SECRET= minimartcookiesecret2025
-# 토근을 발급받을 때 필요한 암호화 키
-JWT_SECRET= minimartjwtsecret2025
-
-# DB정보
-# 개발용 DB
-DB_DEV_HOST=127.0.0.1
-DB_DEV_USERNAME=root
-DB_DEV_PASSWORD=1234
-DB_DEV_NAME=minimart
-DB_DEV_DIALECT=mysql
-
-
-# 배포용 DB
-DB_PRO_HOST=127.0.0.1
-DB_PRO_USERNAME=root
-DB_PRO_PASSWORD=1234
-DB_PRO_NAME=minimart
-DB_PRO_DIALECT=mysql
-
-# 테스트용 DB
-DB_TEST_HOST=127.0.0.1
-DB_TEST_USERNAME=root
-DB_TEST_PASSWORD=1234
-DB_TEST_NAME=minimart
-DB_TEST_DIALECT=mysql
-
-# 프론트엔드 주소
-FRONTEND_APP_URL=http://localhost:5173
-
-# 백엔드 주소
-APP_API_URL=http://localhost:8000
-
-
-# 구글 로그인 api용
-GOOGLE_CLIENT_ID=169522016581-ckdr76e48i1k0gklbqnsu05bker33aot.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
-GOOGLE_CALLBACK_URL=http://localhost:8000/auth/google/callback
-
-#카카오 로그인
-KAKAO_REST_API_KEY=7415ede5f1352034f84d402942c4e281
-KAKAO_REDIRECT_URI=http://localhost:8000/auth/kakao/callback
-JWT_SECRET=your_jwt_secret
 
 ------------
 
@@ -239,5 +184,6 @@ JWT_SECRET=your_jwt_secret
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
 
 ------------
+
 
 
