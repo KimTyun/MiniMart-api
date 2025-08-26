@@ -32,24 +32,24 @@ initPassport()
 app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
-sequelize
-   .getQueryInterface()
-   .dropAllTables({ cascade: true })
-   .then(() => {
-      return sequelize.sync({ force: true })
-   })
-   .then(() => {
-      console.log('DB 강제 초기화 완료 (외래키 무시)')
-   })
-   .catch(console.error)
+// sequelize
+//    .getQueryInterface()
+//    .dropAllTables({ cascade: true })
+//    .then(() => {
+//       return sequelize.sync({ force: true })
+//    })
+//    .then(() => {
+//       console.log('DB 강제 초기화 완료 (외래키 무시)')
+//    })
+//    .catch(console.error)
 
-// uploads 폴더가 없을 경우 새로 생성
-try {
-   fs.readdirSync('uploads') //해당 폴더가 있는지 확인
-} catch (error) {
-   console.log('uploads 폴더가 없어 uploads 폴더를 생성합니다.')
-   fs.mkdirSync('uploads') //폴더 생성
-}
+// // uploads 폴더가 없을 경우 새로 생성
+// try {
+//    fs.readdirSync('uploads') //해당 폴더가 있는지 확인
+// } catch (error) {
+//    console.log('uploads 폴더가 없어 uploads 폴더를 생성합니다.')
+//    fs.mkdirSync('uploads') //폴더 생성
+// }
 
 app.use(
    cors({

@@ -1,4 +1,4 @@
-const { Follow, Seller, User } = require('../models') // User 모델 추가
+const { Follow, Seller, User } = require('../models')
 
 exports.followSeller = async (req, res, next) => {
    try {
@@ -83,7 +83,6 @@ exports.getFollowingSellersForHome = async (req, res, next) => {
          order: [['createdAt', 'DESC']],
       })
 
-      // 데이터 구조를 프론트엔드가 예상하는 형태로 변환
       const sellers = followingList.map((f) => ({
          id: f.Seller.id,
          name: f.Seller.name,
