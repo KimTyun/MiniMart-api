@@ -101,7 +101,7 @@
     <tr>
         <td align="center"><strong>상품 및 주문</strong></td>
         <td align="center"><p>상품 등록/수정/삭제, 상세 페이지, 장바구니, 주문 내역 관리</p></td>
-        <td align="center"><p>김택윤, 박태민</p></td>
+        <td align="center"><p>김택윤</p></td>
     </tr>
       <tr>
         <td align="center"><strong>구매자 시스템</strong></td>
@@ -110,7 +110,7 @@
     </tr>
     <tr>
         <td align="center"><strong>판매자 시스템, 관리자 페이지</strong></td>
-        <td align="center"><p>회원 정보 관리, 판매자 등록 신청,판매자 승인 관리,  관리자 승인/거절, 판매자별 상세 페이지, 관리자 대시보드</p></td>
+        <td align="center"><p>회원 정보 관리, 판매자 등록 신청, 판매자 승인 관리, 고객 통계,  관리자 승인/거절, 판매자별 상세 페이지, 관리자 대시보드</p></td>
         <td align="center"><p>박태민</p></td>
     </tr>
   </tbody>
@@ -184,6 +184,7 @@
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
 
 ------------
+
 
 
 
