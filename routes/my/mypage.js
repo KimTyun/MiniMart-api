@@ -113,40 +113,40 @@ router.get('/', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
 
-      // 유저 정보 조회 (필요한 필드만 선택)
+      // 유저 정보 조회
       const user = await User.findByPk(userId, {
          attributes: ['id', 'name', 'email', 'phone_number', 'address', 'profile_img', 'role'],
       })
 
-      // 구매 내역 조회 (orderitem 조인)
+      // 주문 내역 조회
       const orders = await Order.findAll({
          where: { buyer_id: userId },
+         order: [['createdAt', 'DESC']],
          include: [
             {
                model: OrderItem,
-               attributes: ['count'],
                include: [
                   {
                      model: Item,
-                     attributes: ['id', 'name'],
                      include: [
+                        { model: ItemImg },
                         {
-                           model: ItemImg,
-                           attributes: ['url'],
-                           limit: 1,
+                           model: Seller,
+                           include: [{ model: User }],
                         },
                      ],
                   },
                ],
             },
          ],
-         order: [['createdAt', 'DESC']],
       })
 
       // 팔로잉 목록 조회
       const followings = await Follow.findAll({
-         where: { buyer_id: userId }, // buyer_id 사용
+         where: { buyer_id: userId },
          include: [{ model: Seller, as: 'Seller', attributes: ['id', 'name'] }],
+         raw: true,
+         nest: true,
       })
 
       res.json({
@@ -155,13 +155,16 @@ router.get('/', isLoggedIn, async (req, res, next) => {
          data: {
             user,
             orders,
-            followings: followings.map((f) => ({
-               id: f.Seller.id,
-               name: f.Seller.name,
-            })),
+            followings: followings
+               .filter((f) => f.Seller?.id)
+               .map((f) => ({
+                  id: f.Seller.id,
+                  name: f.Seller.name,
+               })),
          },
       })
    } catch (error) {
+      console.error(error)
       next(error)
    }
 })
@@ -282,24 +285,34 @@ router.delete('/delete', isLoggedIn, async (req, res, next) => {
 // 프사 업로드
 router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage'), async (req, res, next) => {
    try {
-      if (!req.file) return res.status(400).json({ message: '파일이 업로드되지 않았습니다.' })
+      if (!req.file) return res.status(400).json({ message: '프로필 사진이 업데이트 되지 않았습니다.' })
 
-      // 업로드된 이미지 경로
-      const fileUrl = `/uploads/profile-images/${req.file.filename}`
-
-      // 유저 DB에 프로필 이미지 경로 업데이트 (필요시)
       const user = await User.findByPk(req.user.id)
       if (!user) {
          fs.unlink(req.file.path, (err) => {
-            if (err) console.error('파일 삭제 오류:', err)
+            if (err) console.error('프로필 사진 삭제에 실패했습니다: ', err)
          })
          return res.status(404).json({ message: '사용자를 찾을 수 없습니다.' })
       }
-      user.profile_img = fileUrl
+      const oldProfImg = user.profile_img
+      const newProfimg = `/uploads/profile-images/${req.file.filename}`
+
+      user.profile_img = newProfimg
       await user.save()
-      res.json({ url: fileUrl })
+
+      if (oldProfImg && oldProfImg.startsWith('/uploads/profile-images')) {
+         const oldImgPath = path.join(__dirname, `../..${oldProfImg}`)
+         fs.unlink(oldImgPath, (err) => {
+            if (err) console.error('기존 프로필 삭제에 실패했습니다.: ', err)
+         })
+      }
+      res.json({ url: newProfimg })
    } catch (error) {
-      next(error)
+      if (req.file) {
+         fs.unlink(req.file.path, (error) => {
+            if (error) console.error('에러 발생으로 업로드 파일을 삭제합니다.: ', error)
+         })
+      }
    }
 })
 
@@ -307,35 +320,59 @@ router.post('/uploads/profile-images', isLoggedIn, upload.single('profileImage')
 router.post('/review', isLoggedIn, async (req, res, next) => {
    try {
       const userId = req.user.id
-      const { orderId, sellerId, content } = req.body
+      const { orderId, content, rating } = req.body
 
-      res.status(200).send('OK')
-      // 필수 데이터 체크
-      if (!orderId || !sellerId || !content) {
+      if (!orderId || !content || !rating) {
          return res.status(400).json({ message: '필수 데이터가 누락되었습니다.' })
       }
-
-      // 주문 소유권 확인
-      const order = await Order.findOne({ where: { id: orderId, buyer_id: userId } })
-      if (!order) {
-         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나 권한이 없습니다.' })
-      }
-
-      // 리뷰 중복 확인
-      const existingReview = await ItemReview.findOne({
-         where: { buyer_id: userId, seller_id: sellerId },
+      const order = await Order.findOne({
+         where: { id: orderId, buyer_id: userId },
+         include: [
+            {
+               model: OrderItem,
+               include: [
+                  {
+                     model: Item,
+                     include: [
+                        {
+                           model: Seller,
+                           include: [
+                              {
+                                 model: User,
+                                 as: 'Seller',
+                              },
+                           ],
+                        },
+                     ],
+                  },
+               ],
+            },
+         ],
       })
-      if (existingReview) {
-         return res.status(400).json({ message: '이미 해당 상품에 리뷰를 작성했습니다.' })
+
+      if (!order) {
+         return res.status(404).json({ message: '해당 주문을 찾을 수 없거나, 권한이 없습니다.' })
       }
 
-      // 리뷰 저장
+      const sellerId = order.OrderItems[0].Item.Seller.User.id
+      if (!sellerId) {
+         return res.status(404).json({ message: '판매자 정보를 찾을 수 없습니다.' })
+      }
+      const existReview = await ItemReview.findOne({
+         where: { order_id: orderId },
+      })
+
+      if (existReview) {
+         return res.status(400).json({ message: '해당 주문의 리뷰를 이미 작성했습니다.' })
+      }
+
       const newReview = await ItemReview.create({
          buyer_id: userId,
          seller_id: sellerId,
-         content,
+         order_id: orderId,
+         content: content,
+         rating: rating,
       })
-
       await Order.update({ hasReview: true }, { where: { id: orderId } })
 
       return res.status(201).json({
@@ -344,7 +381,7 @@ router.post('/review', isLoggedIn, async (req, res, next) => {
          orderId: orderId,
       })
    } catch (error) {
-      console.error('리뷰 등록 오류:', error)
+      console.error('리뷰 등록 에러: ', error)
       next(error)
    }
 })
@@ -408,7 +445,7 @@ router.post('/review', isLoggedIn, async (req, res, next) => {
  *        '500':
  *          description: 서버 오류
  */
-router.patch('/orders/:orderId/cancel', isLoggedIn, async (req, res, next) => {
+router.patch('/:orderId/cancel', isLoggedIn, async (req, res, next) => {
    const { orderId } = req.params
    const userId = req.user.id
    try {

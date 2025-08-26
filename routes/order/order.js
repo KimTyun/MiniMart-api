@@ -72,10 +72,14 @@ router.post('/', async (req, res, next) => {
          items.map(async (item) => {
             const updateItem = await Item.findByPk(item.item_id)
             if (!updateItem) {
-               throw new Error(`상품을 찾을 수 없습니다.`)
+               const error = new Error('상품을 찾을 수 없습니다.')
+               error.status = 404
+               throw error
             }
             if (updateItem.stock_number < item.count) {
-               throw new Error('상품 재고가 부족합니다.')
+               const error = new Error('상품 재고가 부족합니다.')
+               error.status = 412
+               throw error
             }
             await updateItem.update(
                {
