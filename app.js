@@ -33,13 +33,9 @@ app.set('PORT', process.env.PORT || 8000)
 
 // 테이블 재생성 코드(테이블 변경사항이 없을 경우 주석처리)
 sequelize
-   .getQueryInterface()
-   .dropAllTables({ cascade: true })
+   .sync()
    .then(() => {
-      return sequelize.sync({ force: true })
-   })
-   .then(() => {
-      console.log('DB 강제 초기화 완료 (외래키 무시)')
+      console.log('DB 연결 및 모델 동기화 완료')
    })
    .catch(console.error)
 
