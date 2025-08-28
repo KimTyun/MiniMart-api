@@ -129,8 +129,10 @@ router.get('/', isLoggedIn, async (req, res, next) => {
                   {
                      model: Item,
                      include: [
+                        { model: ItemImg },
                         {
-                           model: ItemImg,
+                           model: Seller,
+                           include: [{ model: User }],
                         },
                      ],
                   },
@@ -443,7 +445,7 @@ router.post('/review', isLoggedIn, async (req, res, next) => {
  *        '500':
  *          description: 서버 오류
  */
-router.patch('/orders/:orderId/cancel', isLoggedIn, async (req, res, next) => {
+router.patch('/:orderId/cancel', isLoggedIn, async (req, res, next) => {
    const { orderId } = req.params
    const userId = req.user.id
    try {

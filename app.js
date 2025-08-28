@@ -53,7 +53,6 @@ app.use(
       credentials: true, // 쿠키, 세션 등 인증 정보 허용
    }),
    morgan('dev'),
-   express.static(path.join(__dirname, 'uploads')),
    express.json(),
    express.urlencoded({ extended: false }),
    cookieParser(process.env.COOKIE_SECRET),
