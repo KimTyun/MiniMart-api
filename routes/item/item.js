@@ -508,30 +508,12 @@ router.get('/seller/:sellerId', async (req, res, next) => {
 // 추천상품(implicit 적용)
 router.post('/implicit', isLoggedIn, async (req, res, next) => {
    try {
-      const userId = req.user.id
-      const userCIs = await sequelize.query(
-         `
-         SELECT 
-             c.user_id AS user_id,
-             ci.item_id AS item_id,
-             CAST(SUM(ci.count) AS UNSIGNED) AS carts_count
-         FROM carts c
-         JOIN cart_item ci ON c.user_id = ci.user_id
-         WHERE c.user_id = :userId
-         GROUP BY ci.item_id, c.user_id
-         ORDER BY c.user_id, ci.item_id;
-         `,
-         {
-            replacements: { userId: userId },
-            type: sequelize.QueryTypes.SELECT,
-         }
-      )
-
-      const cartItemIds = userCIs.map((item) => item.item_id)
+      const cartsData = req.body
+      const cartsItemId = cartsData.map((item) => item.id)
 
       const recommendItems = await Item.findAll({
          where: {
-            id: { [Op.in]: cartItemIds },
+            id: { [Op.in]: cartsItemId },
          },
          include: [
             {
@@ -540,7 +522,7 @@ router.post('/implicit', isLoggedIn, async (req, res, next) => {
                where: { repImgYn: 'Y' },
             },
          ],
-         order: [[fn('FIELD', col('Item.id'), ...cartItemIds), 'ASC']],
+         order: [[fn('FIELD', col('Item.id'), ...cartsItemId), 'ASC']],
          distinct: true,
       })
 
