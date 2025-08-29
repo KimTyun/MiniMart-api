@@ -25,7 +25,7 @@ module.exports = class Follow extends Sequelize.Model {
             sequelize,
             timestamps: true,
             underscored: false,
-            modelName: 'Follow',
+            modelName: 'follow',
             paranoid: true,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',

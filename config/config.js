@@ -29,6 +29,7 @@ module.exports = {
       database: process.env.DB_PRO_NAME,
       host: process.env.DB_PRO_HOST,
       dialect: process.env.DB_PRO_DIALECT,
+      logging: false, // 로그 숨기기
       timezone: '+09:00', // KST로 설정
    },
 }

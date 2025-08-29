@@ -17,11 +17,11 @@ module.exports = class Cart extends Sequelize.Model {
             sequelize,
             timestamps: false,
             underscored: false,
-            modelName: 'Cart',
+            modelName: 'cart',
             paranoid: false,
             charset: 'utf8mb4',
             collate: 'utf8mb4_general_ci',
-         },
+         }
       )
    }
 
