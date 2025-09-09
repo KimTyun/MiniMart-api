@@ -184,9 +184,16 @@
 ### 프로젝트 협업용 git
 <a href="https://github.com/KimTyun/MiniMart-api">API git 링크</a>
 <br />
+------------
+<br />
 <a href="https://github.com/KimTyun/MiniMart-frontend">Frontend git 링크</a>
+<br />
+------------
+<br />
+<a href="https://github.com/KimTyun/MiniMart-recommend">Frontend git 링크</a>
 
 ------------
+
 
 
 
