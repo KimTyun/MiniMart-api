@@ -134,7 +134,8 @@
 
 
 ### 프로젝트 아키텍쳐
-<img width="1990" height="1100" alt="image" src="https://github.com/user-attachments/assets/b2db01ff-1131-44d5-97f5-e9d886d1bf1f" />
+<img width="1990" height="1100" alt="image" 
+src="https://github.com/user-attachments/assets/55b03951-472b-4124-b3ee-108e4bac4e1d" />
 
 
 ------------
@@ -189,6 +190,7 @@
 <br />
 <br />
 <a href="https://github.com/KimTyun/MiniMart-recommend">recommend git 링크</a>
+
 
 
 
